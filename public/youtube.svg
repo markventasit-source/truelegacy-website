@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <defs>
+    <linearGradient id="ytGold" x1="16" y1="12" x2="80" y2="84" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F2D9A4"/>
+      <stop offset="45%" stop-color="#E8C584"/>
+      <stop offset="100%" stop-color="#C9A45A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Footer green disc (#0C201E) + gold ring — slightly larger radius -->
+  <circle cx="48" cy="48" r="47" fill="#0C201E"/>
+  <circle cx="48" cy="48" r="47" fill="none" stroke="url(#ytGold)" stroke-width="2"/>
+
+  <!-- Larger YouTube screen, centered (54×36) -->
+  <rect x="21" y="30" width="54" height="36" rx="11" ry="11" fill="url(#ytGold)"/>
+
+  <!-- Play triangle centered in the larger screen (equal ~16px side padding) -->
+  <polygon points="37,38 37,58 57,48" fill="#0C201E"/>
+</svg>

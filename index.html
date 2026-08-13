@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/src/assets/icon/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="GPgPKtab6Be1X-O7gjOec3m2kPeu3ZADczoJn2RMoKQ" />
+    <!--
+      Analytics / Meta Pixel: deferred until after load + idle.
+      Cache-Control on connect.facebook.net is controlled by Meta (often ~20m) —
+      we cannot lengthen it. Deferring keeps these off the LCP critical path.
+    -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+
+      /* Official Meta stub — queues calls until fbevents.js loads */
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];}(window,document);
+      fbq('init', '1397319418949240');
+      fbq('track', 'PageView');
+
+      (function () {
+        var loaded = false;
+        function loadThirdParty() {
+          if (loaded) return;
+          loaded = true;
+
+          var ga = document.createElement('script');
+          ga.async = true;
+          ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-GR80GZBEVS';
+          document.head.appendChild(ga);
+          gtag('js', new Date());
+          gtag('config', 'G-GR80GZBEVS');
+
+          var fb = document.createElement('script');
+          fb.async = true;
+          fb.src = 'https://connect.facebook.net/en_US/fbevents.js';
+          document.head.appendChild(fb);
+        }
+
+        function arm() {
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadThirdParty, { timeout: 2000 });
+          } else {
+            setTimeout(loadThirdParty, 1);
+          }
+        }
+
+        function start() { setTimeout(arm, 5500); }
+
+        if (document.readyState === 'complete') start();
+        else window.addEventListener('load', start, { once: true });
+      })();
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1397319418949240&ev=PageView&noscript=1"
+      loading="lazy"
+      decoding="async"
+      /></noscript>
+
+    <!-- Hide static LCP shell on non-home routes (runs before first paint) -->
+    <script>
+      (function () {
+        var path = location.pathname.replace(/\/+$/, "") || "/";
+        if (path !== "/") {
+          document.documentElement.classList.add("hide-lcp-shell");
+        }
+      })();
+    </script>
+
+    <!-- Critical first-paint + LCP shell (heights must match HeaderHome) -->
+    <style>
+      html, body { margin: 0; background: #fff; }
+      body { font-family: system-ui, -apple-system, sans-serif; }
+      /*
+        Keep #root hidden until BOTH:
+        - css-ready: main stylesheet applied (avoids FOUC CLS)
+        - hero-ready: React hero mounted (home), OR hide-lcp-shell (other routes)
+        Then hide spacer/shell in the same style pass so they never stack.
+      */
+      #root { visibility: hidden; }
+      html.css-ready.hero-ready #root,
+      html.css-ready.hide-lcp-shell #root { visibility: visible; }
+      .hide-lcp-shell #hero-lcp-shell,
+      .hide-lcp-shell #lcp-hero-spacer,
+      html.css-ready.hero-ready #hero-lcp-shell,
+      html.css-ready.hero-ready #lcp-hero-spacer { display: none !important; }
+      /*
+        Crawlable copy for no-JS SEO scanners (Screaming Frog, Googlebot).
+        Visually hidden — never display:none — so H1/word-count still register;
+        removed from the DOM when React mounts.
+      */
+      #seo-static-content {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      /* In-flow spacer reserves hero height (shell is absolutely positioned on top) */
+      #lcp-hero-spacer {
+        width: 100%;
+        height: 640px;
+        margin-top: -50px;
+        pointer-events: none;
+      }
+      #hero-lcp-shell {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 640px;
+        margin-top: -50px;
+        overflow: hidden;
+        background: #132f2c;
+        z-index: 20;
+        pointer-events: none;
+      }
+      #hero-lcp-shell img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: right bottom;
+      }
+      @media (min-width: 640px) {
+        #lcp-hero-spacer,
+        #hero-lcp-shell { height: 700px; margin-top: -80px; }
+      }
+      @media (min-width: 1024px) {
+        #lcp-hero-spacer,
+        #hero-lcp-shell { height: 561px; margin-top: 0; }
+        #lcp-hero-spacer { margin-bottom: 2rem; } /* lg:mb-8 */
+        #hero-lcp-shell img {
+          top: 60px;
+          height: calc(100% - 60px);
+        }
+      }
+      @media (min-width: 1280px) {
+        #lcp-hero-spacer,
+        #hero-lcp-shell { height: 600px; }
+        #lcp-hero-spacer { margin-bottom: 2.5rem; } /* xl:mb-10 */
+      }
+    </style>
+
+    <!-- LCP hero — discoverable before JS (stable public URLs match HeaderHome slide 1) -->
+    <link
+      rel="preload"
+      as="image"
+      type="image/webp"
+      href="/hero-slide-1-mobile.webp"
+      media="(max-width: 1023px)"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      as="image"
+      type="image/webp"
+      href="/hero-slide-1-desktop.webp"
+      media="(min-width: 1024px)"
+      fetchpriority="high"
+    />
+
+    <title>Expert Estate Planning Trusts &amp; Succession | Truelegacy</title>
+    <meta name="description" content="Secure your family's future with expert estate planning trusts. Truelegacy helps you manage assets and succession. Contact us to build your legacy right now." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://truelegacyindia.com" />
+    
+    <!-- Default Open Graph / Facebook (Home Page) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Truelegacy" />
+    <meta property="og:url" content="https://truelegacyindia.com" />
+    <meta property="og:title" content="Expert Estate Planning Trusts &amp; Succession | Truelegacy" />
+    <meta property="og:description" content="Secure your family's future with expert estate planning trusts. Truelegacy helps you manage assets and succession. Contact us to build your legacy right now." />
+    <meta property="og:image" content="https://truelegacyindia.com/og-image.jpg" />
+
+    <!-- Default Twitter (Home Page) -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Expert Estate Planning Trusts &amp; Succession | Truelegacy" />
+    <meta name="twitter:image" content="https://truelegacyindia.com/og-image.jpg" />
+    <meta name="twitter:url" content="https://truelegacyindia.com" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://truelegacyindia.com/#organization",
+        "name": "Truelegacy",
+        "alternateName": "Truelegacy",
+        "url": "https://truelegacyindia.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://truelegacyindia.com/truelagacylogo.webp"
+        },
+        "image": "https://truelegacyindia.com/truelagacylogo.webp",
+        "description": "True Legacy provides expert estate planning, will drafting, trust formation, and wealth succession solutions for individuals, families, business owners, and NRIs.",
+        "email": "info@truelegacy.in",
+        "telephone": "+91-7592912300",
+        "sameAs": [
+          "https://www.facebook.com/share/1CqpzdoLFZ/?mibextid=wwXIfr",
+          "https://www.instagram.com/truelegacy_india/?igsh=OHJteGFoNHIwZWJ4",
+          "https://www.linkedin.com/company/true-legacy-india/",
+          "https://youtube.com/@truelegacyindia-h7c"
+        ]
+      }
+    </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ProfessionalService",
+        "@id": "https://truelegacyindia.com/#localbusiness",
+        "name": "Truelegacy",
+        "url": "https://truelegacyindia.com",
+        "logo": "https://truelegacyindia.com/truelagacylogo.webp",
+        "telephone": "+91-7592912300",
+        "email": "info@truelegacy.in",
+        "description": "True Legacy provides expert estate planning, will drafting, trust formation, and wealth succession solutions for individuals, families, business owners, and NRIs.",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "True Legacy Solutions Private Limited, 2nd Floor, Imperial Amity, NH Bypass, Chalikkavattom, Vytila, Ernakulam, 682019",
+          "addressLocality": "Ernakulam",
+          "addressRegion": "Kerala",
+          "postalCode": "682019",
+          "addressCountry": "IN"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "9.98265726719237",
+          "longitude": "76.31638841349344"
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday"
+            ],
+            "opens": "09:30",
+            "closes": "18:30"
+          }
+        ],
+        "areaServed": [
+          {
+            "@type": "Country",
+            "name": "India"
+          },
+          {
+            "@type": "Place",
+            "name": "Worldwide (NRI Clients)"
+          }
+        ],
+        "sameAs": [
+          "https://www.linkedin.com/company/true-legacy-india/",
+          "https://www.facebook.com/share/1CqpzdoLFZ/?mibextid=wwXIfr",
+          "https://www.instagram.com/truelegacy_india/?igsh=OHJteGFoNHIwZWJ4",
+          "https://youtube.com/@truelegacyindia-h7c"
+        ]
+      }
+    </script>
+
+  </head>
+  <body>
+    <!-- Spacer holds hero height in document flow; shell overlays it for LCP -->
+    <div id="lcp-hero-spacer" aria-hidden="true"></div>
+    <div id="hero-lcp-shell" aria-hidden="true">
+      <picture>
+        <source media="(min-width: 1024px)" srcset="/hero-slide-1-desktop.webp" />
+        <img
+          src="/hero-slide-1-mobile.webp"
+          alt="Truelegacy estate planning and succession planning for Indian families"
+          width="800"
+          height="1079"
+          loading="eager"
+          decoding="sync"
+          fetchpriority="high"
+        />
+      </picture>
+    </div>
+
+    <!--
+      Static SEO content for crawlers / no-JS tools.
+      Hidden once React mounts (css-ready + hero-ready). Must stay in the raw HTML
+      response — SPA JS alone is invisible to many SEO scanners.
+    -->
+    <main id="seo-static-content">
+      <h1>Expert Estate Planning, Trusts &amp; Succession Planning | Truelegacy</h1>
+      <p>
+        Secure your family's future with expert estate planning trusts. Truelegacy helps
+        individuals, families, business owners, and NRIs manage assets and succession with
+        clear, practical guidance. Contact us to build your legacy with confidence.
+      </p>
+      <p>
+        From wills and private family trusts to legal heir identification and readiness
+        assessments, we help you protect what you have built and pass it on without
+        unnecessary conflict or delay.
+      </p>
+
+      <h2>Plan Your Legacy with Our Succession Tool</h2>
+      <p>
+        No succession plan? Discover your legal heirs in seconds with Truelegacy's
+        interactive family tree and inheritance calculation based on succession laws —
+        often in under a minute.
+      </p>
+      <ul>
+        <li>Interactive family tree visualization</li>
+        <li>Inheritance calculation based on succession laws</li>
+        <li>Fast, guided experience for families and NRIs</li>
+      </ul>
+
+      <h2>Who We Are</h2>
+      <p>
+        Truelegacy provides expert will drafting, trust formation, and wealth succession
+        solutions designed for modern Indian families and cross-border estate needs.
+      </p>
+
+      <h2>Explore Truelegacy</h2>
+      <nav aria-label="Primary site links">
+        <ul>
+          <li><a href="https://truelegacyindia.com/services/will">Will drafting services</a></li>
+          <li><a href="https://truelegacyindia.com/services/trust">Private family trust services</a></li>
+          <li><a href="https://truelegacyindia.com/succession">Legal heir identification tool</a></li>
+          <li><a href="https://truelegacyindia.com/why-choose-us">Why choose Truelegacy</a></li>
+          <li><a href="https://truelegacyindia.com/resources">Guides on succession laws &amp; estate planning</a></li>
+          <li><a href="https://truelegacyindia.com/articles-news-events">Articles, news &amp; events</a></li>
+          <li><a href="https://truelegacyindia.com/readiness-survey">Readiness survey</a></li>
+          <li><a href="https://truelegacyindia.com/contact">Contact Truelegacy</a></li>
+          <li><a href="https://truelegacyindia.com/privacy-policy">Privacy policy</a></li>
+          <li><a href="https://truelegacyindia.com/terms-of-service">Terms of service</a></li>
+        </ul>
+      </nav>
+
+      <h2>Speak With Our Team</h2>
+      <p>
+        Ready to protect your family's future?
+        <a href="https://truelegacyindia.com/contact">Schedule a consultation</a>
+        or email
+        <a href="mailto:info@truelegacy.in">info@truelegacy.in</a>
+        / call
+        <a href="tel:+917592912300">+91-7592912300</a>.
+      </p>
+    </main>
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      /* Fallback if stylesheet onload is missed */
+      setTimeout(function () {
+        if (document.documentElement.classList.contains("css-ready")) return;
+        document.documentElement.classList.add("css-ready");
+        document.dispatchEvent(new Event("tl-css-ready"));
+      }, 2500);
+    </script>
+  </body>
+</html>
