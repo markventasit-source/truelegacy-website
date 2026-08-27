@@ -14,8 +14,14 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 4967
+          script_stop: true
           script: |
+            set -e
             cd /var/www/html/truelegacy-website
+            # Build regenerates sitemap into public/dist; discard those local
+            # edits so git pull is never blocked by a dirty sitemap.xml.
+            git checkout -- public/sitemap.xml public/sitemap-blogs.xml 2>/dev/null || true
+            git clean -fd -- public/sitemap-blogs.xml 2>/dev/null || true
             git pull origin main
             npm install
             npm run build

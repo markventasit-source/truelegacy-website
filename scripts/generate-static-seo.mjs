@@ -482,8 +482,8 @@ ${body}
 </urlset>
 `;
   await writeFile(path.join(DIST_DIR, "sitemap.xml"), xml, "utf8");
-  // Keep public/ in sync so local previews and non-CI builds stay accurate.
-  await writeFile(path.join(ROOT_DIR, "public", "sitemap.xml"), xml, "utf8");
+  // Do NOT write back to public/sitemap.xml — that dirties the server
+  // checkout and blocks the next `git pull` in CI deploy.
   return urls.length;
 }
 
