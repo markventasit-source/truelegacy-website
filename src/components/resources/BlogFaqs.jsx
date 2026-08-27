@@ -6,6 +6,8 @@ const FAQ_JSON_LD_ID = "resource-faq-jsonld";
 
 /**
  * Accordion FAQs for a single resource article (CMS-driven via blog.faqs).
+ * Intentionally avoids home `.faq-list` / `.faq-item` classes — those stay
+ * opacity:0 until `.faq-section-visible`, which this page never sets.
  */
 export default function BlogFaqs({ faqs }) {
   const [openQuestion, setOpenQuestion] = useState(null);
@@ -69,51 +71,38 @@ export default function BlogFaqs({ faqs }) {
       >
         Frequently asked questions
       </h2>
-      <div className="space-y-2 faq-list">
+      <div className="space-y-0">
         {items.map((faq, index) => {
           const isOpen = openQuestion === index;
           return (
             <div
               key={`${faq.question}-${index}`}
-              className="border-b border-[#E1E6E4] bg-transparent faq-item"
+              className="border-b border-[#E1E6E4]"
             >
               <button
                 type="button"
                 onClick={() => setOpenQuestion(isOpen ? null : index)}
-                className="w-full px-0 py-3 flex justify-between items-center text-left hover:bg-[#F5FAF7] transition-colors"
+                className="w-full py-4 flex justify-between items-start gap-3 text-left"
                 aria-expanded={isOpen}
               >
-                <span
-                  className={`font-[Urania] text-[#132F2C] text-[18px] faq-question-text font-medium pr-3 ${
-                    isOpen ? "text-[20px] md:text-[22px]" : ""
-                  }`}
-                  style={{
-                    fontFamily: "Urania",
-                    fontWeight: "500",
-                    WebkitTextStroke: "0.3px #132F2C",
-                  }}
-                >
+                <span className="font-[Urania] text-[#132F2C] text-[17px] md:text-[18px] leading-[26px] font-medium">
                   {faq.question}
                 </span>
-                <span className="ml-3 flex-shrink-0">
-                  <span className="relative inline-flex items-center justify-center w-6 h-6">
-                    <img
-                      src={isOpen ? iconMinus : iconWrap}
-                      alt=""
-                      className="w-full h-full"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </span>
+                <span className="mt-0.5 flex-shrink-0 inline-flex items-center justify-center w-6 h-6">
+                  <img
+                    src={isOpen ? iconMinus : iconWrap}
+                    alt=""
+                    className="w-full h-full"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </span>
               </button>
-              <div
-                className={`px-0 text-[#4C6B63] text-[15px] leading-[22px] font-[Urania] faq-answer ${
-                  isOpen ? "faq-answer-open" : "faq-answer-closed"
-                }`}
-              >
-                {faq.answer}
-              </div>
+              {isOpen ? (
+                <p className="pb-4 pr-8 font-[Urania] text-[#2A4742] text-[15px] md:text-[16px] leading-[24px]">
+                  {faq.answer}
+                </p>
+              ) : null}
             </div>
           );
         })}
