@@ -1,24 +1,28 @@
 import { useEffect, useState } from "react";
-import iconWrap from "../../assets/icon/Icon wrap.webp";
-import iconMinus from "../../assets/icon/Icon-.webp";
 
 const FAQ_JSON_LD_ID = "resource-faq-jsonld";
 
 /**
  * Accordion FAQs for a single resource article (CMS-driven via blog.faqs).
- * Intentionally avoids home `.faq-list` / `.faq-item` classes — those stay
- * opacity:0 until `.faq-section-visible`, which this page never sets.
  */
 export default function BlogFaqs({ faqs }) {
-  const [openQuestion, setOpenQuestion] = useState(null);
-
   const items = Array.isArray(faqs)
-    ? faqs.filter((f) => f?.question && f?.answer)
+    ? faqs.filter((f) => f?.question?.trim() && f?.answer?.trim())
     : [];
+
+  const [openQuestion, setOpenQuestion] = useState(() =>
+    items.length > 0 ? 0 : null
+  );
 
   const faqKey = items
     .map((f) => `${f.question}\0${f.answer}`)
     .join("\n");
+
+  useEffect(() => {
+    // Reset open state when FAQ list changes (e.g. navigate to another article)
+    setOpenQuestion(items.length > 0 ? 0 : null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-open when content identity changes
+  }, [faqKey]);
 
   useEffect(() => {
     const existing = document.getElementById(FAQ_JSON_LD_ID);
@@ -64,44 +68,61 @@ export default function BlogFaqs({ faqs }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="pt-4 md:pt-6" aria-labelledby="resource-faqs-heading">
+    <section
+      className="mt-10 md:mt-12 rounded-lg border border-[#D5DDDA] bg-white p-5 md:p-7"
+      aria-labelledby="resource-faqs-heading"
+    >
       <h2
         id="resource-faqs-heading"
-        className="font-[Urania] text-[24px] leading-[32px] font-medium text-[#132F2C] mb-4 md:mb-6"
+        className="font-[Urania] text-[22px] md:text-[26px] leading-[30px] md:leading-[34px] font-bold text-[#132F2C] mb-5"
       >
         Frequently asked questions
       </h2>
-      <div className="space-y-0">
+
+      <div className="flex flex-col gap-3">
         {items.map((faq, index) => {
           const isOpen = openQuestion === index;
+          const panelId = `resource-faq-panel-${index}`;
           return (
             <div
               key={`${faq.question}-${index}`}
-              className="border-b border-[#E1E6E4]"
+              className="rounded-md border border-[#E1E6E4] bg-[#F6FFFF]"
             >
               <button
                 type="button"
                 onClick={() => setOpenQuestion(isOpen ? null : index)}
-                className="w-full py-4 flex justify-between items-start gap-3 text-left"
+                className="w-full px-4 py-3.5 flex items-start gap-3 text-left"
                 aria-expanded={isOpen}
+                aria-controls={panelId}
               >
-                <span className="font-[Urania] text-[#132F2C] text-[17px] md:text-[18px] leading-[26px] font-medium">
-                  {faq.question}
+                <span
+                  className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#132F2C] text-[18px] leading-none font-semibold text-white"
+                  aria-hidden="true"
+                >
+                  {isOpen ? "−" : "+"}
                 </span>
-                <span className="mt-0.5 flex-shrink-0 inline-flex items-center justify-center w-6 h-6">
-                  <img
-                    src={isOpen ? iconMinus : iconWrap}
-                    alt=""
-                    className="w-full h-full"
-                    loading="lazy"
-                    decoding="async"
-                  />
+                <span className="min-w-0 flex-1">
+                  <span className="mb-1 block font-[Urania] text-[12px] font-semibold uppercase tracking-wide text-[#5A7A72]">
+                    Question {index + 1}
+                  </span>
+                  <span className="block font-[Urania] text-[16px] md:text-[18px] leading-[24px] md:leading-[26px] font-semibold text-[#132F2C]">
+                    {faq.question}
+                  </span>
                 </span>
               </button>
+
               {isOpen ? (
-                <p className="pb-4 pr-8 font-[Urania] text-[#2A4742] text-[15px] md:text-[16px] leading-[24px]">
-                  {faq.answer}
-                </p>
+                <div
+                  id={panelId}
+                  className="border-t border-[#E1E6E4] px-4 pb-4 pt-3 ml-10"
+                >
+                  <p className="mb-1.5 font-[Urania] text-[12px] font-semibold uppercase tracking-wide text-[#5A7A72]">
+                    Answer
+                  </p>
+                  <p className="font-[Urania] text-[15px] md:text-[16px] leading-[24px] text-[#132F2C] whitespace-pre-wrap">
+                    {faq.answer}
+                  </p>
+                </div>
               ) : null}
             </div>
           );
