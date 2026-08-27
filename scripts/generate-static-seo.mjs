@@ -221,6 +221,7 @@ const buildBlogSeoBlock = ({
   description,
   articleText,
   relatedLinks = [],
+  faqs = [],
   image,
   imageAlt,
 }) => {
@@ -249,12 +250,29 @@ ${relatedLinks
       </ul>`
       : "";
 
+  const faqItems = Array.isArray(faqs)
+    ? faqs.filter((f) => f?.question && f?.answer)
+    : [];
+  const faqHtml =
+    faqItems.length > 0
+      ? `
+      <h2>Frequently asked questions</h2>
+      <dl>
+${faqItems
+  .map(
+    (f) => `        <dt>${escapeHtml(f.question)}</dt>
+        <dd>${escapeHtml(f.answer)}</dd>`
+  )
+  .join("\n")}
+      </dl>`
+      : "";
+
   return wrapSeoMain(`      <article>
       <h1>${escapeHtml(title)}</h1>
 ${seoImageHtml(image, imageAlt || title)}
       <p>${escapeHtml(description)}</p>
 ${bodyHtml}
-      </article>${related}
+      </article>${faqHtml}${related}
       <h2>Explore Truelegacy</h2>
       <nav aria-label="Primary site links">
         <ul>
@@ -275,6 +293,7 @@ const buildArticleJsonLd = ({
   url,
   datePublished,
   dateModified,
+  faqs = [],
 }) => {
   const data = {
     "@context": "https://schema.org",
@@ -303,7 +322,30 @@ const buildArticleJsonLd = ({
   };
   if (datePublished) data.datePublished = datePublished;
   if (dateModified) data.dateModified = dateModified;
-  return `<script type="application/ld+json">${JSON.stringify(data)}</script>`;
+
+  const faqItems = Array.isArray(faqs)
+    ? faqs.filter((f) => f?.question && f?.answer)
+    : [];
+  const scripts = [
+    `<script type="application/ld+json">${JSON.stringify(data)}</script>`,
+  ];
+  if (faqItems.length > 0) {
+    scripts.push(
+      `<script type="application/ld+json">${JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faqItems.map((f) => ({
+          "@type": "Question",
+          name: f.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: f.answer,
+          },
+        })),
+      })}</script>`
+    );
+  }
+  return scripts.join("\n");
 };
 
 const extractBlogPlainText = (blog) => {
@@ -588,6 +630,7 @@ async function main() {
       description,
       articleText,
       relatedLinks,
+      faqs: blog.faqs,
       image,
       imageAlt,
     });
@@ -598,6 +641,7 @@ async function main() {
       url,
       datePublished: blog.createdAt,
       dateModified: blog.updatedAt || blog.createdAt,
+      faqs: blog.faqs,
     });
 
     const html = injectPageSeo(stripHomeSeoBlock(baseHtml), {

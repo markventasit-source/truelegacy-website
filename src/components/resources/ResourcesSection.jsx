@@ -6,6 +6,7 @@ import MarkdownContent, {
   normalizeBlogContent,
   slugifyHeading,
 } from "./MarkdownContent";
+import BlogFaqs from "./BlogFaqs";
 import { toast } from "sonner";
 import {
   FaWhatsapp,
@@ -773,6 +774,7 @@ xl:ml-auto xl:mr-[-40px]`}
                     );
                   })
                 : null}
+              <BlogFaqs faqs={blogData?.faqs} />
             </div>
           </article>
 
