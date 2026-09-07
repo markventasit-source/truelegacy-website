@@ -71,24 +71,19 @@ export const normalizeBlogContent = (content) => {
 /**
  * Walk through the markdown line-by-line and rewrite ordered-list markers
  * so that items which logically belong to the same list are numbered
- * sequentially even when blank lines or nested content sit between them.
+ * sequentially even when blank lines or body text sit between them.
  *
- * Rules:
- * - An ordered item line matches /^(\s*)(\d+)\.\s/
- * - We track a "current counter" per indentation level.
- * - If an item's number is ≤ the current counter for that indent level AND
- *   the gap since the last item at that level contained only blank lines or
- *   indented content (no headings, thematic breaks, or unindented paragraphs
- *   that would start a new list), we renumber it.
- * - Any heading / thematic break / unindented non-list paragraph resets the
- *   counter so a genuinely new list starts fresh.
+ * The content from tiptap-markdown can be stored in two formats:
+ * 1. "Loose" format — items separated by blank lines with indented sub-content
+ * 2. "Tight" format — all lines have trailing "  " (hard break), no blank lines,
+ *    sub-content lines are NOT indented (e.g. "Guardianship planning should…")
+ *
+ * In both cases, a new list only starts after a heading or thematic break.
+ * Plain text between `1.` items is treated as body content, not a list break.
  */
 function renumberOrderedLists(text) {
   const lines = text.split("\n");
-  // counter per indent-level (key = number of leading spaces, rounded to nearest 2)
   const counters = {};
-  // track whether we've seen a "list-breaking" element since last item at root level
-  let pendingReset = false;
 
   const indentKey = (spaces) => Math.floor(spaces / 2) * 2;
 
@@ -99,19 +94,13 @@ function renumberOrderedLists(text) {
       const [, indent, , rest] = olMatch;
       const key = indentKey(indent.length);
 
-      if (pendingReset && key === 0) {
-        // A genuine new list at root level after a break — reset counter
+      if (counters[key] == null) {
         counters[key] = 1;
-        pendingReset = false;
-      } else if (counters[key] == null) {
-        counters[key] = 1;
-        pendingReset = false;
       } else {
         counters[key] += 1;
-        pendingReset = false;
       }
 
-      // Clear counters for deeper indent levels when we return to a shallower one
+      // Clear counters for deeper indent levels when returning to shallower
       Object.keys(counters).forEach((k) => {
         if (Number(k) > key) delete counters[k];
       });
@@ -119,19 +108,14 @@ function renumberOrderedLists(text) {
       return `${indent}${counters[key]}. ${rest}`;
     }
 
-    // Heading or thematic break → signals a new list context
+    // Heading or thematic break → genuine new list context, reset all counters
     if (/^#{1,6}\s/.test(line) || /^[-*_]{3,}\s*$/.test(line)) {
       Object.keys(counters).forEach((k) => delete counters[k]);
-      pendingReset = false;
       return line;
     }
 
-    // Non-empty, non-indented, non-list line at root level → potential list break
-    // (but blank lines and indented content are fine — they're loose-list bodies)
-    if (line.trim() !== "" && !/^\s/.test(line) && !/^[-*+]\s/.test(line)) {
-      pendingReset = true;
-    }
-
+    // Everything else (plain text, bullet lines, blank lines) — don't reset.
+    // Plain text lines are treated as list item body content.
     return line;
   });
 
