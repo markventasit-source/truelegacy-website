@@ -253,21 +253,9 @@ const MarkdownContent = ({ content, className = "", idPrefix = "" }) => {
               {children}
             </Heading>
           ),
-          p: ({ children }) => {
-            // Fallback if bold-only paragraphs weren't normalized
-            if (isBoldOnlyParagraph(children)) {
-              return (
-                <Heading
-                  as="h2"
-                  idPrefix={idPrefix}
-                  className="text-[24px] leading-[32px] font-medium mb-3 mt-8 first:mt-0"
-                >
-                  {getNodeText(children)}
-                </Heading>
-              );
-            }
-            return <p className="mb-4 last:mb-0 text-justify hyphens-none">{children}</p>;
-          },
+          p: ({ children }) => (
+            <p className="mb-4 last:mb-0 text-justify hyphens-none">{children}</p>
+          ),
           ul: ({ children }) => (
             <ul className="list-disc list-outside pl-5 sm:pl-6 space-y-2 mb-4 marker:text-[#132F2C]">
               {children}
