@@ -200,7 +200,7 @@ const MarkdownContent = ({ content, className = "", idPrefix = "" }) => {
                 </Heading>
               );
             }
-            return <p className="mb-4 last:mb-0 text-pretty">{children}</p>;
+            return <p className="mb-4 last:mb-0 text-justify hyphens-none">{children}</p>;
           },
           ul: ({ children }) => (
             <ul className="list-disc list-outside pl-5 sm:pl-6 space-y-2 mb-4 marker:text-[#132F2C]">
