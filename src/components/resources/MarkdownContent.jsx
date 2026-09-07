@@ -26,6 +26,7 @@ export const getNodeText = (children) => {
  * Normalize CMS / pasted blog HTML+markdown so body copy lines up cleanly:
  * - bold-only paragraphs → headings
  * - "• item" / "· item" lines → real markdown lists
+ * - consecutive ordered-list blocks that all start at 1 → continuous numbering
  */
 export const normalizeBlogContent = (content) => {
   let text = String(content || "").replace(/\r\n/g, "\n");
@@ -53,8 +54,89 @@ export const normalizeBlogContent = (content) => {
 
   // Tighten extra blank lines created by replacements
   text = text.replace(/\n{3,}/g, "\n\n");
+
+  // Re-number consecutive ordered-list items that all reset to 1.
+  // This happens when tiptap-markdown serialises "loose" lists (items with
+  // nested content separated by blank lines): each item gets "1." and
+  // CommonMark parsers treat each one as a fresh <ol>.
+  // Strategy: scan lines; whenever we see a "N." item that would restart
+  // numbering (N <= last seen counter) and the preceding non-blank content
+  // was also an ordered-list item or indented list content, increment the
+  // counter and rewrite the line.
+  text = renumberOrderedLists(text);
+
   return text.trim();
 };
+
+/**
+ * Walk through the markdown line-by-line and rewrite ordered-list markers
+ * so that items which logically belong to the same list are numbered
+ * sequentially even when blank lines or nested content sit between them.
+ *
+ * Rules:
+ * - An ordered item line matches /^(\s*)(\d+)\.\s/
+ * - We track a "current counter" per indentation level.
+ * - If an item's number is ≤ the current counter for that indent level AND
+ *   the gap since the last item at that level contained only blank lines or
+ *   indented content (no headings, thematic breaks, or unindented paragraphs
+ *   that would start a new list), we renumber it.
+ * - Any heading / thematic break / unindented non-list paragraph resets the
+ *   counter so a genuinely new list starts fresh.
+ */
+function renumberOrderedLists(text) {
+  const lines = text.split("\n");
+  // counter per indent-level (key = number of leading spaces, rounded to nearest 2)
+  const counters = {};
+  // track whether we've seen a "list-breaking" element since last item at root level
+  let pendingReset = false;
+
+  const indentKey = (spaces) => Math.floor(spaces / 2) * 2;
+
+  const result = lines.map((line) => {
+    // Ordered list item: capture indent, number, rest
+    const olMatch = line.match(/^(\s*)(\d+)\.\s([\s\S]*)$/);
+    if (olMatch) {
+      const [, indent, , rest] = olMatch;
+      const key = indentKey(indent.length);
+
+      if (pendingReset && key === 0) {
+        // A genuine new list at root level after a break — reset counter
+        counters[key] = 1;
+        pendingReset = false;
+      } else if (counters[key] == null) {
+        counters[key] = 1;
+        pendingReset = false;
+      } else {
+        counters[key] += 1;
+        pendingReset = false;
+      }
+
+      // Clear counters for deeper indent levels when we return to a shallower one
+      Object.keys(counters).forEach((k) => {
+        if (Number(k) > key) delete counters[k];
+      });
+
+      return `${indent}${counters[key]}. ${rest}`;
+    }
+
+    // Heading or thematic break → signals a new list context
+    if (/^#{1,6}\s/.test(line) || /^[-*_]{3,}\s*$/.test(line)) {
+      Object.keys(counters).forEach((k) => delete counters[k]);
+      pendingReset = false;
+      return line;
+    }
+
+    // Non-empty, non-indented, non-list line at root level → potential list break
+    // (but blank lines and indented content are fine — they're loose-list bodies)
+    if (line.trim() !== "" && !/^\s/.test(line) && !/^[-*+]\s/.test(line)) {
+      pendingReset = true;
+    }
+
+    return line;
+  });
+
+  return result.join("\n");
+}
 
 const MediaImage = ({ src, alt }) => {
   const kind = String(alt || "").toLowerCase().trim();
