@@ -5,6 +5,36 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google-site-verification" content="GPgPKtab6Be1X-O7gjOec3m2kPeu3ZADczoJn2RMoKQ" />
+    <!-- Preload Urania weights used across the site to prevent FOUT -->
+    <link rel="preload" href="/src/assets/font/Urania-Regular.otf" as="font" type="font/otf" crossorigin="anonymous" />
+    <link rel="preload" href="/src/assets/font/Urania-Medium.otf" as="font" type="font/otf" crossorigin="anonymous" />
+    <link rel="preload" href="/src/assets/font/Urania-Bold.otf" as="font" type="font/otf" crossorigin="anonymous" />
+    <!-- Make Urania active in the browser's font cache before React mounts,
+         eliminating the swap flash. Font paths here must match @font-face in index.css. -->
+    <style>
+      @font-face {
+        font-family: "Urania";
+        src: url("/src/assets/font/Urania-Regular.otf") format("opentype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "Urania";
+        src: url("/src/assets/font/Urania-Medium.otf") format("opentype");
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "Urania";
+        src: url("/src/assets/font/Urania-Bold.otf") format("opentype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+      body { font-family: "Urania", system-ui, sans-serif; }
+    </style>
     <!--
       Analytics / Meta Pixel: deferred until after load + idle.
       Cache-Control on connect.facebook.net is controlled by Meta (often ~20m) —
@@ -73,7 +103,7 @@
     <!-- Critical first-paint + LCP shell (heights must match HeaderHome) -->
     <style>
       html, body { margin: 0; background: #fff; }
-      body { font-family: system-ui, -apple-system, sans-serif; }
+      body { font-family: "Urania", system-ui, -apple-system, sans-serif; }
       /*
         Keep #root hidden until BOTH:
         - css-ready: main stylesheet applied (avoids FOUC CLS)
