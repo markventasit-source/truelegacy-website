@@ -28,6 +28,7 @@ const FamilyMembers = lazy(() => import("../pages/succession/FamilyView"));
 const SignIn = lazy(() => import("../pages/succession/SignIn"));
 const TermsOfService = lazy(() => import("../pages/Terms"));
 const Privacy = lazy(() => import("../pages/privacy"));
+const NotFound = lazy(() => import("../pages/NotFound"));
 
 const Router = createBrowserRouter([
   {
@@ -179,7 +180,19 @@ const Router = createBrowserRouter([
       },
       {
         path: "*",
-        element: <h1>404 | Page Not Found</h1>,
+        element: (
+          <Suspense fallback={null}>
+            <NotFound />
+          </Suspense>
+        ),
+      },
+      {
+        path: "404",
+        element: (
+          <Suspense fallback={null}>
+            <NotFound />
+          </Suspense>
+        ),
       },
     ],
   },

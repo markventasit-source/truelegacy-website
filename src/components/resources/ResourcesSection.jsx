@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import ShareIcon from "../../assets/icon/share-08.webp";
 import { formatContentTypeLabel, getAllBlogs, getBlogById } from "../../api/blogsApi";
 import MarkdownContent, {
@@ -120,6 +120,7 @@ const ResourcesSection = () => {
   const [latestWithExcerpts, setLatestWithExcerpts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+  const [notFound, setNotFound] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [activeTocId, setActiveTocId] = useState("");
   const sectionRef = useRef(null);
@@ -150,6 +151,7 @@ const ResourcesSection = () => {
           setBlogData(null);
           setRelatedBlogs([]);
           setLatestBlogs([]);
+          setNotFound(true);
           return;
         }
 
@@ -216,6 +218,7 @@ const ResourcesSection = () => {
         setRelatedBlogs([]);
         setLatestBlogs([]);
         setLatestWithExcerpts([]);
+        setNotFound(true);
       } finally {
         if (!active) return;
         setLoading(false);
@@ -227,6 +230,7 @@ const ResourcesSection = () => {
       setRelatedBlogs([]);
       setLatestBlogs([]);
       setLatestWithExcerpts([]);
+      setNotFound(true);
       setLoading(false);
       return;
     }
@@ -478,6 +482,8 @@ const ResourcesSection = () => {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
     setActiveTocId(id);
   };
+
+  if (!loading && notFound) return <Navigate to="/404" replace />;
 
   return (
     <section

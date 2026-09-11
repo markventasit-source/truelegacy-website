@@ -162,7 +162,7 @@ body.succession-route [class*="cursor-pointer"] * {
   src: url("./assets/font/Urania-Regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
 }
 
 @font-face {
@@ -170,7 +170,7 @@ body.succession-route [class*="cursor-pointer"] * {
   src: url("./assets/font/Urania-Medium.otf") format("opentype");
   font-weight: 500;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
 }
 
 @font-face {
@@ -178,7 +178,7 @@ body.succession-route [class*="cursor-pointer"] * {
   src: url("./assets/font/Urania-Bold.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
 }
 
 /* Subtle shine accent for CTA blocks */
