@@ -110,7 +110,7 @@ body {
   src: url("./assets/font/Urania-Thin.otf") format("opentype");
   font-weight: 100;
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
 }
 
 @font-face {
@@ -118,8 +118,7 @@ body {
   src: url("./assets/font/Urania-ExtraLight.otf") format("opentype");
   font-weight: 200;
   font-style: normal;
-  /* optional: avoid late font-swap CLS on the hero headline */
-  font-display: optional;
+  font-display: swap;
 }
 
 @font-face {
@@ -127,7 +126,7 @@ body {
   src: url("./assets/font/Urania-Light.otf") format("opentype");
   font-weight: 300;
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
 }
 
 
@@ -163,7 +162,7 @@ body.succession-route [class*="cursor-pointer"] * {
   src: url("./assets/font/Urania-Regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
 }
 
 @font-face {
@@ -171,7 +170,7 @@ body.succession-route [class*="cursor-pointer"] * {
   src: url("./assets/font/Urania-Medium.otf") format("opentype");
   font-weight: 500;
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
 }
 
 @font-face {
@@ -179,7 +178,7 @@ body.succession-route [class*="cursor-pointer"] * {
   src: url("./assets/font/Urania-Bold.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
 }
 
 /* Subtle shine accent for CTA blocks */

@@ -192,8 +192,7 @@ const MarkdownContent = ({ content, className = "", idPrefix = "" }) => {
 
   return (
     <div
-      className={`blog-markdown text-[16px] leading-[28px] font-normal text-[#132F2C] ${className}`}
-      style={{ fontFamily: 'Urania, "Segoe UI", system-ui, sans-serif' }}
+      className={`blog-markdown font-[Urania] text-[16px] leading-[28px] font-normal text-[#132F2C] ${className}`}
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
