@@ -60,56 +60,6 @@ const isMobileDevice = () =>
   (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
     (navigator.maxTouchPoints > 1 && window.innerWidth < 1024));
 
-const STICKY_TOP = 96;
-
-const pinSidebar = (columnEl, panelEl, gridEl, minWidth = 1024) => {
-  if (!columnEl || !panelEl || !gridEl) return;
-
-  if (window.innerWidth < minWidth) {
-    panelEl.style.cssText = "";
-    columnEl.style.minHeight = "";
-    return;
-  }
-
-  const gridRect = gridEl.getBoundingClientRect();
-  const colRect = columnEl.getBoundingClientRect();
-  const panelHeight = panelEl.offsetHeight;
-  const top = STICKY_TOP;
-
-  columnEl.style.minHeight = `${panelHeight}px`;
-
-  // Above stick point — normal flow
-  if (gridRect.top >= top) {
-    panelEl.style.cssText = "";
-    return;
-  }
-
-  // Past bottom of grid — dock to bottom of column
-  if (gridRect.bottom <= top + panelHeight) {
-    panelEl.style.position = "absolute";
-    panelEl.style.top = "auto";
-    panelEl.style.bottom = "0";
-    panelEl.style.left = "0";
-    panelEl.style.right = "0";
-    panelEl.style.width = "100%";
-    panelEl.style.zIndex = "20";
-    return;
-  }
-
-  // Stick in viewport while scrolling article
-  panelEl.style.position = "fixed";
-  panelEl.style.top = `${top}px`;
-  panelEl.style.left = `${colRect.left}px`;
-  panelEl.style.width = `${colRect.width}px`;
-  panelEl.style.bottom = "auto";
-  panelEl.style.right = "auto";
-  panelEl.style.zIndex = "20";
-  panelEl.style.maxHeight = `calc(100vh - ${top + 24}px)`;
-  panelEl.style.overflowY = "auto";
-  panelEl.style.scrollbarWidth = "none";
-  panelEl.style.msOverflowStyle = "none";
-};
-
 const ResourcesSection = () => {
   const navigate = useNavigate();
   const { slug } = useParams();
@@ -127,11 +77,31 @@ const ResourcesSection = () => {
   const shareMenuRef = useRef(null);
   const relatedScrollRef = useRef(null);
   const scrollDirRef = useRef(1);
-  const contentGridRef = useRef(null);
-  const tocColumnRef = useRef(null);
-  const tocPanelRef = useRef(null);
-  const relatedColumnRef = useRef(null);
-  const relatedPanelRef = useRef(null);
+  const articleRef = useRef(null);
+  const tocListRef = useRef(null);
+
+  // New effect — scrolls the active TOC item into view within the sticky sidebar
+useEffect(() => {
+  if (!activeTocId || !tocListRef.current) return;
+  const container = tocListRef.current;
+  const activeEl = container.querySelector(`[data-toc-id="${activeTocId}"]`);
+  if (!activeEl) return;
+
+  const containerRect = container.getBoundingClientRect();
+  const activeRect = activeEl.getBoundingClientRect();
+
+  const isAbove = activeRect.top < containerRect.top;
+  const isBelow = activeRect.bottom > containerRect.bottom;
+
+  if (isAbove || isBelow) {
+    const offsetWithinContainer =
+      activeEl.offsetTop - container.clientHeight / 2 + activeEl.clientHeight / 2;
+    container.scrollTo({
+      top: Math.max(0, offsetWithinContainer),
+      behavior: "smooth",
+    });
+  }
+}, [activeTocId]);
 
   useEffect(() => {
     setIsVisible(true);
@@ -315,29 +285,28 @@ const ResourcesSection = () => {
       })}`
     : "";
 
-  const tocItems = useMemo(() => {
-    if (!blogData) return [];
-    const items = [
-      ...extractMarkdownHeadings(blogData.dark_content, "dark"),
-      ...extractMarkdownHeadings(blogData.faded_content, "faded"),
-    ];
+const [tocItems, setTocItems] = useState([]);
 
-    (blogData.sub_sections || []).forEach((section, idx) => {
-      if (section?.title) {
-        items.push({
-          id: `section-${idx}`,
-          title: section.title,
-          level: 2,
-        });
-      }
-      items.push(
-        ...extractMarkdownHeadings(section?.content, `section-${idx}`)
-      );
-    });
+useEffect(() => {
+  if (!blogData || !articleRef.current) {
+    setTocItems([]);
+    return;
+  }
 
-    return items;
-  }, [blogData]);
+  const raf = requestAnimationFrame(() => {
+   const headingEls = articleRef.current.querySelectorAll("h1, h2, h3, h4, h5, h6");
+    const items = Array.from(headingEls)
+      .filter((el) => el.id)
+      .map((el) => ({
+        id: el.id,
+        title: el.textContent.trim(),
+        level: Number(el.tagName[1]),
+      }));
+    setTocItems(items);
+  });
 
+  return () => cancelAnimationFrame(raf);
+}, [blogData]);
   const sidebarRelated = useMemo(() => {
     const fromRelated = (relatedBlogs || [])
       .filter((b) => b?.slug && b.slug !== slug)
@@ -366,56 +335,34 @@ const ResourcesSection = () => {
       }));
   }, [relatedBlogs, latestWithExcerpts, slug]);
 
-  useEffect(() => {
-    if (!tocItems.length) return;
+useEffect(() => {
+  if (!tocItems.length) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]?.target?.id) {
-          setActiveTocId(visible[0].target.id);
-        }
-      },
-      { rootMargin: "-20% 0px -55% 0px", threshold: [0.1, 0.4, 0.7] }
-    );
+  const headerOffset = 120; // keep in sync with scrollToHeading's offset
 
-    tocItems.forEach((item) => {
+  const handleScroll = () => {
+    let currentId = tocItems[0].id;
+    for (const item of tocItems) {
       const el = document.getElementById(item.id);
-      if (el) observer.observe(el);
-    });
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      if (top - headerOffset <= 0) {
+        currentId = item.id;
+      } else {
+        break;
+      }
+    }
+    setActiveTocId((prev) => (prev === currentId ? prev : currentId));
+  };
 
-    return () => observer.disconnect();
-  }, [tocItems, blogData]);
-
-  useEffect(() => {
-    const syncSidebars = () => {
-      pinSidebar(
-        tocColumnRef.current,
-        tocPanelRef.current,
-        contentGridRef.current
-      );
-      pinSidebar(
-        relatedColumnRef.current,
-        relatedPanelRef.current,
-        contentGridRef.current,
-        1280
-      );
-    };
-
-    syncSidebars();
-    const raf = requestAnimationFrame(syncSidebars);
-    window.addEventListener("scroll", syncSidebars, { passive: true });
-    window.addEventListener("resize", syncSidebars);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", syncSidebars);
-      window.removeEventListener("resize", syncSidebars);
-    };
-  }, [blogData, tocItems, sidebarRelated, loading]);
-
+  handleScroll(); // set correct active item on mount/content load
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener("resize", handleScroll);
+  return () => {
+    window.removeEventListener("scroll", handleScroll);
+    window.removeEventListener("resize", handleScroll);
+  };
+}, [tocItems]);
   const shareUrl =
     typeof window !== "undefined" ? window.location.href : "";
   const shareText =
@@ -476,12 +423,14 @@ const ResourcesSection = () => {
     setShareOpen((prev) => !prev);
   };
 
-  const scrollToHeading = (id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-    setActiveTocId(id);
-  };
+const scrollToHeading = (id) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const headerOffset = 96;
+  const elementPosition = el.getBoundingClientRect().top + window.scrollY;
+  window.scrollTo({ top: elementPosition - headerOffset, behavior: "smooth" });
+  setActiveTocId(id);
+};
 
   if (!loading && notFound) return <Navigate to="/404" replace />;
 
@@ -695,42 +644,45 @@ xl:ml-auto xl:mr-[-40px]`}
         {/* Content grid: TOC | Article | Related
             lg: 2-col so the article isn’t squeezed; xl+: 3-col */}
         <div
-          ref={contentGridRef}
-          className="grid grid-cols-1 gap-8 lg:grid-cols-[200px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,720px)_240px] 2xl:grid-cols-[240px_minmax(0,760px)_260px] lg:gap-10 xl:gap-12 xl:justify-between items-start"
+
+          className="grid grid-cols-1 gap-8 lg:grid-cols-[200px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,720px)_240px] 2xl:grid-cols-[240px_minmax(0,760px)_260px] lg:gap-10 xl:gap-12 xl:justify-between"
         >
           {/* Left TOC — desktop only */}
           <aside
-            ref={tocColumnRef}
-            className="hidden lg:block relative self-start"
+
+            className="hidden lg:block"
           >
-            <div
-              ref={tocPanelRef}
-              className="pr-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    <div
+  ref={tocListRef}
+  className="sticky top-[96px] max-h-[calc(100vh-120px)] overflow-y-auto pr-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+>
+  <h2 className="font-[Urania] text-[14px] font-semibold tracking-wide uppercase text-[#868989] mb-4">
+    Table of contents
+  </h2>
+  {tocItems.length ? (
+    <nav aria-label="Table of contents">
+      <ul className="space-y-2 border-l border-[#D9D9D9]">
+        {tocItems.map((item) => (
+          <li key={item.id}>
+            <button
+              type="button"
+              data-toc-id={item.id}
+              onClick={() => scrollToHeading(item.id)}
+            className={`block w-full text-left font-[Urania] text-[14px] leading-[20px] transition-colors border-l-2 -ml-px pl-4 py-0.5 ${
+  activeTocId === item.id
+    ? "border-[#132F2C] text-[#132F2C] font-medium"
+    : "border-transparent text-[#868989] hover:text-[#132F2C]"
+} ${item.level === 3 ? "pl-7 text-[13px]" : ""} ${
+  item.level >= 4 ? "pl-10 text-[12px]" : ""
+}`}
             >
-              <h2 className="font-[Urania] text-[14px] font-semibold tracking-wide uppercase text-[#868989] mb-4">
-                Table of contents
-              </h2>
-              {tocItems.length ? (
-                <nav aria-label="Table of contents">
-                  <ul className="space-y-2 border-l border-[#D9D9D9]">
-                    {tocItems.map((item) => (
-                      <li key={item.id}>
-                        <button
-                          type="button"
-                          onClick={() => scrollToHeading(item.id)}
-                          className={`block w-full text-left font-[Urania] text-[14px] leading-[20px] transition-colors border-l-2 -ml-px pl-4 py-0.5 ${
-                            activeTocId === item.id
-                              ? "border-[#132F2C] text-[#132F2C] font-medium"
-                              : "border-transparent text-[#868989] hover:text-[#132F2C]"
-                          } ${item.level > 2 ? "pl-7 text-[13px]" : ""}`}
-                        >
-                          {item.title}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              ) : (
+              {item.title}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  ) : (
                 <p className="font-[Urania] text-[14px] text-[#868989]">
                   No sections available
                 </p>
@@ -739,12 +691,13 @@ xl:ml-auto xl:mr-[-40px]`}
           </aside>
 
           {/* Main article */}
-          <article
-            className={`text-[#132F2C] font-[Urania] w-full min-w-0 max-w-[760px] ${
-              isVisible ? "animate-fade-in" : ""
-            }`}
-            style={{ animationDelay: "600ms" }}
-          >
+       <article
+  ref={articleRef}
+  className={`text-[#132F2C] font-[Urania] w-full min-w-0 max-w-[760px] ${
+    isVisible ? "animate-fade-in" : ""
+  }`}
+  style={{ animationDelay: "600ms" }}
+>
             <div className="space-y-8 md:space-y-10">
               {blogData?.dark_content ? (
                 <MarkdownContent
@@ -768,9 +721,12 @@ xl:ml-auto xl:mr-[-40px]`}
                         className="scroll-mt-28"
                       >
                         {s?.title ? (
-                          <h2 className="text-[24px] leading-[32px] font-medium mb-3">
-                            {s.title}
-                          </h2>
+                            <h2
+              id={`section-${idx}-title`}
+              className="text-[24px] leading-[32px] font-medium mb-3 scroll-mt-28"
+            >
+              {s.title}
+            </h2>
                         ) : null}
                         <MarkdownContent
                           content={s?.content}
@@ -786,12 +742,12 @@ xl:ml-auto xl:mr-[-40px]`}
 
           {/* Right related — xl+ only (keeps article readable on laptop widths) */}
           <aside
-            ref={relatedColumnRef}
-            className="hidden xl:block relative self-start"
+
+            className="hidden xl:block"
           >
             <div
-              ref={relatedPanelRef}
-              className="pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+
+              className="sticky top-[96px] max-h-[calc(100vh-120px)] overflow-y-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               <h2 className="font-[Urania] text-[14px] font-semibold tracking-wide uppercase text-[#868989] mb-4">
                 Related blogs
