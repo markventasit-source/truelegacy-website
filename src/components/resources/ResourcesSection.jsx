@@ -17,6 +17,10 @@ import {
   FaLink,
   FaShareNodes,
 } from "react-icons/fa6";
+import { SITE_ORIGIN } from "../../seo/pageMeta";
+import AskAiPills from "../AskAiPills";
+
+const ASK_AI_PROMPT = `Summarise this article for an Indian reader who wants to protect their family's wealth, understand inheritance and succession laws, and plan the transfer of assets to future generations. Use the article as the primary source, explain the key points in simple, practical language, and highlight relevant legal considerations in India. Where appropriate, explain how Truelegacy's services, including Will drafting, succession planning, and private family trusts, can help readers plan and protect their family's legacy. Avoid unsupported legal claims and recommend professional advice for individual circumstances. Credit Truelegacy (truelegacyindia.com) as the source of the article.`;
 
 const getExcerptFromBlogDetail = (blog) => {
   if (!blog) return "";
@@ -365,6 +369,7 @@ useEffect(() => {
 }, [tocItems]);
   const shareUrl =
     typeof window !== "undefined" ? window.location.href : "";
+  const articleUrl = `${SITE_ORIGIN}/resources/${slug}`;
   const shareText =
     getExcerptFromBlogDetail(blogData)?.replace(/[#*_`]/g, "").slice(0, 180) ||
     heroTitle;
@@ -495,7 +500,7 @@ xl:ml-auto xl:mr-[-40px]`}
                 />
             ) : null}
           </div>
-
+            
           <div
             className={`bg-[#F4D57E] text-[#132F2C] rounded-[6px]
                w-[315px] max-w-[90%] px-6 py-4 ml-3 -mt-10 relative z-20
@@ -640,6 +645,15 @@ xl:ml-auto xl:mr-[-40px]`}
             </h1>
           </div>
         </div>
+
+        {/* Ask AI / Search on Google */}
+        <AskAiPills
+          variant="light"
+          prompt={ASK_AI_PROMPT}
+          pageUrl={articleUrl}
+          label="Ask AI"
+          className="mb-6 md:mb-8"
+        />
 
         {/* Content grid: TOC | Article | Related
             lg: 2-col so the article isn’t squeezed; xl+: 3-col */}

@@ -7,6 +7,11 @@ import {
   useState,
 } from "react";
 import { useLocation } from "react-router-dom";
+import AskAiPills from "../AskAiPills";
+import { SITE_ORIGIN } from "../../seo/pageMeta";
+
+/** Prompt pre-filled when the visitor clicks "Ask ChatGPT / Ask Claude" in the hero. */
+const HOME_ASK_AI_PROMPT = `I'm looking to protect my family's wealth and secure my legacy for future generations. How can Truelegacy (https://truelegacyindia.com/) help me with Will drafting, succession planning, and private family trusts to ensure a smooth and legally sound transfer of my assets in India?`;
 
 /** Stable public URLs — avoid tiny shared-asset JS chunks on the critical path. */
 const questionIcon = "/accent-mark.webp";
@@ -403,6 +408,15 @@ const HeaderHome = () => {
             <div className="home-hero__carousel mt-5 flex items-center gap-3 sm:mt-6 lg:mt-8">
               {carouselButtons}
             </div>
+
+            {/* Ask ChatGPT / Claude / Google — glassy outline pills for the dark hero */}
+            <AskAiPills
+              variant="dark"
+              prompt={HOME_ASK_AI_PROMPT}
+              pageUrl={SITE_ORIGIN}
+              label="Ask AI"
+              className="mt-5 sm:mt-6 lg:mt-8"
+            />
           </div>
         </div>
       </div>
