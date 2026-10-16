@@ -6,8 +6,10 @@ const CLAUDE_BASE = "https://claude.ai/new";
 const buildAiChatUrl = (base, prompt, pageUrl) =>
   `${base}?q=${encodeURIComponent(`${prompt}\n\n${pageUrl}`)}`;
 
-const buildGoogleSearchUrl = (pageUrl) =>
-  `https://www.google.com/search?q=${encodeURIComponent(`site:${pageUrl}`)}`;
+const buildGoogleSearchUrl = (prompt, pageUrl) =>
+  `https://www.google.com/search?udm=50&q=${encodeURIComponent(
+    `${prompt}\n\n${pageUrl}`
+  )}`;
 
 const items = [
   { key: "chatgpt", label: "Ask ChatGPT", base: CHATGPT_BASE, Icon: SiOpenai },
@@ -32,7 +34,7 @@ const ICON_CLASSES = {
  * with the given prompt + page URL pre-filled.
  *
  * @param {string}  prompt  Text sent to ChatGPT / Claude.
- * @param {string}  pageUrl Absolute page URL included with the prompt (and used for the site: Google search).
+ * @param {string}  pageUrl Absolute page URL included with the prompt for all three services.
  * @param {"light"|"dark"} variant light = white borders for light pages; dark = glassy outline for dark heroes.
  * @param {string}  [label] Optional lead-in text, e.g. "Discuss this article with:".
  */
@@ -60,7 +62,7 @@ const AskAiPills = ({
           href={
             base
               ? buildAiChatUrl(base, prompt, pageUrl)
-              : buildGoogleSearchUrl(pageUrl)
+              : buildGoogleSearchUrl(prompt, pageUrl)
           }
           target="_blank"
           rel="noopener noreferrer"
