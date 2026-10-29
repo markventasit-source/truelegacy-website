@@ -9,6 +9,7 @@ import CloseIcon from "../assets/cancel-01.webp";
 import StyledButton from "../ui/StyledButton";
 import ArrowDownIcon from "../assets/icon/arrow-down-01-sharp.webp";
 import FaviconIcon from "../assets/icon/favicon.png";
+import NavbarSearch from "./NavbarSearch";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -308,8 +309,13 @@ const Navbar = () => {
           </NavLink>
         </nav>
 
-        {/* Right: actions (desktop login pill, mobile menu icon) */}
+        {/* Right: actions (search, desktop login pill, mobile menu icon) */}
         <div className="flex-none flex items-center justify-end gap-3">
+          {/* Search – visible on desktop and tablet */}
+          <div className="hidden lg:flex items-center">
+            <NavbarSearch />
+          </div>
+
           {/* Desktop / tablet: login pill */}
           <div className="hidden">
             <StyledButton
@@ -398,6 +404,11 @@ const Navbar = () => {
                   decoding="async"
                   />
               </button>
+            </div>
+
+            {/* Mobile search */}
+            <div className="px-5 pb-2">
+              <NavbarSearch />
             </div>
             {/* Nav links column */}
             <div className="mt-15 flex-1 px-4 space-y-6 text-[21px] font-[Urania] animate-fade-up menu-slide-in">

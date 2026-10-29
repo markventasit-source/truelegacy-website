@@ -61,6 +61,9 @@ const AllResources = ({
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef(null);
 
+  // Search query from URL (?q=…)
+  const searchQuery = (searchParams.get("q") || "").trim();
+
   // Keep page in the URL so browser back restores the same listing page.
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
 
@@ -157,9 +160,21 @@ const AllResources = ({
     };
   }, [typesKey]);
 
-  const featured = blogs[0];
-  const others = blogs.slice(1, 4);
-  const remainingBlogs = blogs.slice(4);
+  // Apply search filter when ?q= is present
+  const displayBlogs = searchQuery
+    ? blogs.filter((b) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          (b.title || "").toLowerCase().includes(q) ||
+          (b.desc || "").toLowerCase().includes(q) ||
+          (b.excerpt || "").toLowerCase().includes(q)
+        );
+      })
+    : blogs;
+
+  const featured = searchQuery ? null : displayBlogs[0];
+  const others = searchQuery ? [] : displayBlogs.slice(1, 4);
+  const remainingBlogs = searchQuery ? displayBlogs : displayBlogs.slice(4);
 
   const perPage = 9;
   const totalPages = Math.max(1, Math.ceil(remainingBlogs.length / perPage));
@@ -189,10 +204,37 @@ const AllResources = ({
       <div className="max-w-[1400px] mx-auto">
         {/* Section heading */}
         <h2 className="font-[Urania] font-bold text-[#132F2C] text-[32px] leading-[32px] md:text-[42px] md:leading-[49px] mb-6 md:mb-8 resources-heading">
-          {heading}
+          {searchQuery ? (
+            <>
+              <span>Results for </span>
+              <span className="text-emerald-800">&ldquo;{searchQuery}&rdquo;</span>
+              <button
+                onClick={() =>
+                  setSearchParams((prev) => {
+                    const p = new URLSearchParams(prev);
+                    p.delete("q");
+                    p.delete("page");
+                    return p;
+                  }, { replace: true })
+                }
+                className="ml-4 align-middle text-[14px] font-normal text-[#132F2C]/50 underline underline-offset-2 hover:text-emerald-800 transition-colors cursor-pointer"
+                style={{ fontFamily: "Urania" }}
+              >
+                Clear
+              </button>
+            </>
+          ) : (
+            heading
+          )}
         </h2>
 
         {loading ? null : null}
+
+        {!loading && searchQuery && displayBlogs.length === 0 && (
+          <div className="py-16 text-center text-[#132F2C]/50 text-[16px]" style={{ fontFamily: "Urania" }}>
+            No results found for &ldquo;{searchQuery}&rdquo;. Try a different keyword.
+          </div>
+        )}
 
         {!loading && !featured ? null : null}
 
