@@ -34,6 +34,39 @@ const getFirstLineFromMarkdown = (markdown) => {
   return firstLine || "";
 };
 
+/**
+ * Strip common markdown / HTML syntax so excerpts render as plain text.
+ * Handles: links, images, bold, italic, inline-code, headings, lists,
+ * blockquotes, horizontal rules, HTML tags, and excess whitespace.
+ */
+const stripMarkdown = (text = "") => {
+  return String(text)
+    // Remove HTML tags
+    .replace(/<[^>]*>/g, "")
+    // Links: [text](url) → text
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    // Images: ![alt](url) → alt
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    // Bold/italic: ***text*** / **text** / *text* / __text__ / _text_
+    .replace(/(\*{1,3}|_{1,3})([^*_]+)\1/g, "$2")
+    // Inline code: `code`
+    .replace(/`([^`]+)`/g, "$1")
+    // Headings: ## Heading → Heading
+    .replace(/^#{1,6}\s+/gm, "")
+    // Blockquotes
+    .replace(/^>\s+/gm, "")
+    // Unordered list markers
+    .replace(/^[-*+]\s+/gm, "")
+    // Ordered list markers
+    .replace(/^\d+\.\s+/gm, "")
+    // Horizontal rules
+    .replace(/^[-*_]{3,}\s*$/gm, "")
+    // Collapse multiple newlines / whitespace
+    .replace(/\n+/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+};
+
 const getExcerptFromBlogDetail = (blog) => {
   const a = getSecondParagraphFromMarkdown(blog?.dark_content);
   if (a) return a;
@@ -134,14 +167,15 @@ const AllResources = ({
               })}`
             : "",
           title: b.title,
-          desc: b.meta_description || b.description,
+          desc: stripMarkdown(b.meta_description || b.description || ""),
           image: b.image,
           image_alt: b.image_alt || b.title,
-          excerpt:
+          excerpt: stripMarkdown(
             getExcerptFromBlogDetail(b) ||
             b.meta_description ||
             b.description ||
-            "",
+            ""
+          ),
         }));
 
         if (!active) return;
