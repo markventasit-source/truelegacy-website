@@ -655,6 +655,30 @@ xl:ml-auto xl:mr-[-40px]`}
           className="mb-6 md:mb-8"
         />
 
+        {/* Add as preferred Google source — mobile/tablet only */}
+        <div className="mb-6 xl:hidden">
+          <a
+            href="https://www.google.com/preferences/source?q=truelegacyindia.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex w-full items-center gap-4 rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-sm transition-all hover:border-[#4285F4] hover:shadow-md"
+          >
+            <div className="shrink-0">
+              <svg width="42" height="42" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+              </svg>
+            </div>
+            <div className="flex flex-col font-[Urania] text-[15px] font-medium leading-[1.35] text-[#132F2C]">
+              <span>Add <strong>Truelegacy</strong></span>
+              <span>as a preferred</span>
+              <span>source on Google</span>
+            </div>
+          </a>
+        </div>
+
         {/* Content grid: TOC | Article | Related
             lg: 2-col so the article isn’t squeezed; xl+: 3-col */}
         <div
@@ -763,6 +787,28 @@ xl:ml-auto xl:mr-[-40px]`}
 
               className="sticky top-[96px] max-h-[calc(100vh-120px)] overflow-y-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
+              {/* Add Truelegacy as a preferred Google source */}
+              <a
+                href="https://www.google.com/preferences/source?q=truelegacyindia.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mb-6 flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-sm transition-all hover:border-[#4285F4] hover:shadow-md"
+              >
+                <div className="shrink-0">
+                  <svg width="36" height="36" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                  </svg>
+                </div>
+                <div className="flex flex-col font-[Urania] text-[13px] font-medium leading-[1.35] text-[#132F2C]">
+                  <span>Add <strong>Truelegacy</strong></span>
+                  <span>as a preferred</span>
+                  <span>source on Google</span>
+                </div>
+              </a>
+
               <h2 className="font-[Urania] text-[14px] font-semibold tracking-wide uppercase text-[#868989] mb-4">
                 Related blogs
               </h2>
