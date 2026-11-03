@@ -58,73 +58,17 @@ const SurveyResultPage = () => {
     return excellentImg;
   }, [rank]);
 
-  const handleDownloadPdf = async () => {
-    try {
-      const response = await axiosInstance.get('/readiness-survey/download');
-      const result = response.data;
+  const handleDownloadPdf = () => {
+    const fileName = "Survey_Doc for Truelegacy.pdf";
+    const publicUrl = `/${fileName}`;
 
-      if (result.data && result.data.download_url) {
-        const downloadUrl = result.data.download_url;
-        const fileName = 'succession-planning-guide.pdf';
-        
-        // Safari-specific download handling
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        
-        if (isSafari) {
-          // Method 1: Try direct fetch and blob download for Safari
-          try {
-            const fileResponse = await fetch(downloadUrl);
-            const blob = await fileResponse.blob();
-            
-            // Create blob URL and download
-            const blobUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = fileName;
-            link.style.display = 'none';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Clean up blob URL
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
-            
-            return;
-          } catch (blobError) {
-            console.warn('Blob method failed, trying direct link:', blobError);
-          }
-          
-          // Method 2: Fallback to window.location for Safari
-          try {
-            window.location.href = downloadUrl;
-            return;
-          } catch (locationError) {
-            console.warn('Window.location method failed:', locationError);
-          }
-        }
-        
-        // Method 3: Standard method for other browsers
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.download = fileName;
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-      } else {
-        console.error("No download URL received");
-        // Fallback: try to open in new tab
-        window.open(`${apiBaseUrl}/readiness-survey/download`, '_blank');
-      }
-    } catch (error) {
-      console.error("Failed to get download URL:", error);
-      // Final fallback
-      window.open(`${import.meta.env.VITE_APP_API_URL}/readiness-survey/download`, '_blank');
-    }
+    const link = document.createElement("a");
+    link.href = publicUrl;
+    link.download = fileName;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
