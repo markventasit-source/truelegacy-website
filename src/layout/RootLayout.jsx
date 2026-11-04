@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import WhatsAppFloat from "../components/WhatsAppFloat";
 import { usePageMeta } from "../seo/usePageMeta";
+import { captureLeadSource } from "../utils/leadSource";
 
 const Footer = lazy(() => import("../components/Footer"));
 
@@ -40,6 +41,11 @@ const RootLayout = () => {
   const location = useLocation();
   const [showFooter, setShowFooter] = useState(false);
   usePageMeta();
+
+  // Capture ?type= / ?utm_source= from the landing URL once per session
+  useEffect(() => {
+    captureLeadSource();
+  }, []);
   const isServicesPage = location.pathname.startsWith("/services");
   const isSuccessionFlow =
     location.pathname === "/signin" || location.pathname.startsWith("/succession");

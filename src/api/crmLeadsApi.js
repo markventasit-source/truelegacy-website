@@ -1,5 +1,6 @@
 import axios from "axios";
 import { trackMetaLead } from "./enquiryApi";
+import { getLeadSource } from "../utils/leadSource";
 
 const CRM_PUBLIC_LEAD_URL =
   import.meta.env.VITE_CRM_PUBLIC_LEAD_URL ||
@@ -53,7 +54,7 @@ export const saveSuccessionLeadToCrm = async ({
       name: name.trim(),
       email: email.trim().toLowerCase(),
       phone: phone.trim(),
-      source: "succession-tool",
+      source: getLeadSource(),
       survey_data: buildSuccessionSurveyData(successionData, successionId, pdfUrl),
     },
   };
