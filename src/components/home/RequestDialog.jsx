@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createEnquiry } from "../../api/enquiryApi";
 import AnimatedPopup from "../../ui/AnimatedPopup";
 import PhoneInputField from "../../ui/PhoneInputField";
+import { getLeadSource } from "../../utils/leadSource";
 
 const RequestDialog = ({
   open,
@@ -68,12 +69,36 @@ const RequestDialog = ({
               return `${String(H).padStart(2, "0")}:${mm} ${ampm}`;
             };
 
+            // Determine the source based on lead tracking or form type
+            const leadSource = getLeadSource();
+            let source;
+            
+            // If lead came from QR code or other tracked source, use that
+            if (leadSource && leadSource !== "succession-tool") {
+              // Map the lead source to CRM-friendly names
+              if (leadSource === "succession-tool-qr") {
+                source = "QR Code";
+              } else if (leadSource === "succession-tool-event") {
+                source = "Event";
+              } else if (leadSource.startsWith("succession-tool-")) {
+                // Extract custom type, e.g., "succession-tool-webinar" -> "Webinar"
+                const customType = leadSource.replace("succession-tool-", "");
+                source = customType.charAt(0).toUpperCase() + customType.slice(1);
+              } else {
+                // Use the raw utm_source value
+                source = leadSource;
+              }
+            } else {
+              // Default to the original form-based source
+              source = isSchedule ? "Schedule Expert Session" : "Request Call Back";
+            }
+
             const payload = {
               name: fullName,
               email,
               phone,
               message: message && message.trim() ? message.trim() : "No additional notes provided", // Default message if empty
-              source: isSchedule ? "Schedule Expert Session" : "Request Call Back",
+              source: source,
               type: "call",
               date: isSchedule && date ? formatDate(date) : undefined,
               time: isSchedule && time ? formatTime(time) : undefined,
