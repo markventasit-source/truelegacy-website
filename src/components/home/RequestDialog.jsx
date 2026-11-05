@@ -73,6 +73,12 @@ const RequestDialog = ({
             const leadSource = getLeadSource();
             let source;
             
+            // Debug logging
+            console.log('📋 Form Submission - Lead Source Check:', {
+              leadSource: leadSource,
+              isSchedule: isSchedule,
+            });
+            
             // If lead came from QR code or other tracked source, use that
             if (leadSource && leadSource !== "succession-tool") {
               // Map the lead source to CRM-friendly names
@@ -92,6 +98,8 @@ const RequestDialog = ({
               // Default to the original form-based source
               source = isSchedule ? "Schedule Expert Session" : "Request Call Back";
             }
+            
+            console.log('✅ Final source for CRM:', source);
 
             const payload = {
               name: fullName,

@@ -11,9 +11,11 @@ const SuccessionLayout = () => {
   // Capture ?type= / ?utm_source= from the landing URL once per session.
   // This layout is used instead of RootLayout for /succession/* routes, so
   // we must call it here too — otherwise QR/event links lose their attribution.
+  // We call it on every location change to ensure we catch the parameter if user
+  // lands directly on a sub-route with the parameter.
   useEffect(() => {
     captureLeadSource();
-  }, []);
+  }, [location]);
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden">

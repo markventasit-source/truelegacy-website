@@ -23,20 +23,38 @@ const DEFAULT_SOURCE = "succession-tool";
  * navigations won't overwrite the original attribution.
  */
 export const captureLeadSource = () => {
-  // Don't overwrite if we already captured in this session
-  if (sessionStorage.getItem(SESSION_KEY)) return;
-
   const params = new URLSearchParams(window.location.search);
   const type = params.get("type")?.trim();
   const utmSource = params.get("utm_source")?.trim();
+  
+  // Check if we already have a stored source
+  const existingSource = sessionStorage.getItem(SESSION_KEY);
+  
+  // Debug logging
+  console.log('🔍 Lead Source Capture:', {
+    currentUrl: window.location.href,
+    typeParam: type,
+    utmSourceParam: utmSource,
+    existingSource: existingSource,
+  });
+
+  // Don't overwrite if we already captured in this session
+  if (existingSource) {
+    console.log('✅ Using existing lead source:', existingSource);
+    return;
+  }
 
   if (type) {
     // e.g. ?type=qr  →  "succession-tool-qr"
-    sessionStorage.setItem(SESSION_KEY, `${DEFAULT_SOURCE}-${type}`);
+    const leadSource = `${DEFAULT_SOURCE}-${type}`;
+    sessionStorage.setItem(SESSION_KEY, leadSource);
+    console.log('✅ Captured lead source from type param:', leadSource);
   } else if (utmSource) {
     sessionStorage.setItem(SESSION_KEY, utmSource);
+    console.log('✅ Captured lead source from utm_source:', utmSource);
+  } else {
+    console.log('⚠️ No type or utm_source parameter found, will use default on getLeadSource()');
   }
-  // If neither present, nothing is stored — getLeadSource() will return default.
 };
 
 /**
