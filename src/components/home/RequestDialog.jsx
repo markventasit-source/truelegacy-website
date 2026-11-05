@@ -72,6 +72,7 @@ const RequestDialog = ({
             // Determine the source based on lead tracking or form type
             const leadSource = getLeadSource();
             let source;
+            let lead_source_details; // For CRM backend classification
             
             // Debug logging
             console.log('📋 Form Submission - Lead Source Check:', {
@@ -84,22 +85,27 @@ const RequestDialog = ({
               // Map the lead source to CRM-friendly names
               if (leadSource === "succession-tool-qr") {
                 source = "QR Code";
+                lead_source_details = "succession-tool-qr"; // For CRM classification
               } else if (leadSource === "succession-tool-event") {
                 source = "Event";
+                lead_source_details = "succession-tool-event"; // For CRM classification
               } else if (leadSource.startsWith("succession-tool-")) {
                 // Extract custom type, e.g., "succession-tool-webinar" -> "Webinar"
                 const customType = leadSource.replace("succession-tool-", "");
                 source = customType.charAt(0).toUpperCase() + customType.slice(1);
+                lead_source_details = leadSource; // Keep full value for CRM
               } else {
                 // Use the raw utm_source value
                 source = leadSource;
+                lead_source_details = leadSource;
               }
             } else {
               // Default to the original form-based source
               source = isSchedule ? "Schedule Expert Session" : "Request Call Back";
+              lead_source_details = undefined; // No special classification needed
             }
             
-            console.log('✅ Final source for CRM:', source);
+            console.log('✅ Final source for CRM:', { source, lead_source_details });
 
             const payload = {
               name: fullName,
@@ -107,6 +113,7 @@ const RequestDialog = ({
               phone,
               message: message && message.trim() ? message.trim() : "No additional notes provided", // Default message if empty
               source: source,
+              lead_source_details: lead_source_details, // Additional field for CRM classification
               type: "call",
               date: isSchedule && date ? formatDate(date) : undefined,
               time: isSchedule && time ? formatTime(time) : undefined,
