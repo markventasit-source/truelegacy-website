@@ -59,19 +59,22 @@ export const DEFAULT_PAGE_META = {
 
 export const PAGE_META_BY_PATH = {
   "/": {
-    title: "Expert Estate Planning Trusts & Succession | Truelegacy",
+    title: "Estate Planning & Succession Planning in India | Truelegacy",
     description:
-      "Secure your family's future with expert estate planning trusts. Truelegacy helps you manage assets and succession. Contact us to build your legacy right now.",
+      "Protect your family's wealth with Truelegacy's Estate Planning services in India. Explore Will Drafting, Private Family Trusts and Succession Planning solutions.",
+    h1: "Protect Your Family's Wealth with Expert Estate Planning",
   },
   "/succession": {
-    title: "Legal Heir Identification Tool By Truelegacy",
+    title: "Legal Heir Identification Tool in India | Truelegacy",
     description:
-      "Truelegacy's Legal Heir Identification Tool helps you track family lines for estate planning. It's a smart way to secure a legacy. Check it out now.",
+      "Identify your rightful legal heirs with Truelegacy's Legal Heir Identification Tool. Understand family succession and inheritance rights under Indian laws.",
+    h1: "Legal Heir Identification Tool",
   },
   "/readiness-survey": {
-    title: "Truelegacy Readiness Survey: Get Your Score Now",
+    title: "Estate Planning Readiness Survey | Truelegacy",
     description:
-      "Get your score with the Truelegacy Readiness Survey. It's a quick way to check your plans. Don't leave things to chance. See how prepared you are right now.",
+      "Take the Truelegacy readiness survey to assess your estate planning preparedness. Understand your succession planning needs with Truelegacy",
+    h1: "Estate Planning Readiness Survey",
   },
   "/services": {
     title: "Estate Planning and Trust Management | Truelegacy Services",
@@ -81,17 +84,20 @@ export const PAGE_META_BY_PATH = {
   "/services/will": {
     title: "Will Drafting & Estate Planning Services | Truelegacy",
     description:
-      "Expert will drafting, estate planning, and cross-border wills for Indian and NRI families. Protect your legacy with Truelegacy's Family Will services.",
+      "Protect your family's wealth with expert Will drafting services in India. Truelegacy helps Indian and NRI families plan asset distribution and succession.",
+    h1: "Will Drafting & Estate Planning Services",
   },
   "/services/trust": {
-    title: "Private Family Trust Services | Truelegacy",
+    title: "Private Family Trust Services in India | Truelegacy",
     description:
-      "Form and manage private family trusts with Truelegacy. Trust deed drafting, trusteeship, and succession planning for lasting wealth protection.",
+      "Set up a private family trust with Truelegacy. Get expert guidance on trust formation, deed drafting, trusteeship and succession planning in India.",
+    h1: "Private Family Trust Services in India",
   },
   "/why-choose-us": {
-    title: "Expert Succession Planning for Families at Truelegacy",
+    title: "Why Choose True Legacy for Estate Planning?",
     description:
-      "Truelegacy offers expert succession planning for families. We help you pass down assets without the stress. Book a talk to save your legacy.",
+      "Choose Truelegacy for estate planning, Will drafting & private family trusts. Get personalised guidance to protect your family's wealth & secure your legacy.",
+    h1: "Why Choose Us",
   },
   "/resources": {
     title: "Guides to Succession Laws & Estate Planning | Truelegacy",

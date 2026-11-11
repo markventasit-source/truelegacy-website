@@ -70,6 +70,7 @@ const renderQuestionWithIcon = (text) => {
         <img
           src={questionIcon}
           alt=""
+          role="presentation"
           width={22}
           height={22}
           className={`absolute ${
@@ -98,6 +99,7 @@ const HeroBackground = ({ mobileSrc, desktopSrc, visible, priority = false }) =>
     <img
       src={mobileSrc}
       alt=""
+      role="presentation"
       width={MOBILE_IMG_W}
       height={MOBILE_IMG_H}
       loading={priority ? "eager" : "lazy"}
@@ -263,6 +265,7 @@ const HeaderHome = () => {
         <img
           src={arrowLeft}
           alt=""
+          role="presentation"
           width={24}
           height={24}
           loading="lazy"
@@ -278,6 +281,7 @@ const HeaderHome = () => {
         <img
           src={arrowRight}
           alt=""
+          role="presentation"
           width={24}
           height={24}
           loading="lazy"

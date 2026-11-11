@@ -152,6 +152,7 @@ const PlanYourLegacy = () => {
         <img
           src={group4Bg}
           alt=""
+          role="presentation"
           aria-hidden="true"
           loading="lazy"
           decoding="async"

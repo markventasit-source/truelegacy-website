@@ -156,6 +156,7 @@ const seoImageHtml = (image, imageAlt) => {
 /** Crawlable body for marketing pages. */
 const buildSeoOutlinksBlock = ({
   title,
+  h1,
   description,
   resourceLinks = [],
   image,
@@ -177,7 +178,7 @@ ${resourceLinks
       </nav>`
       : "";
 
-  return wrapSeoMain(`      <h1>${escapeHtml(title)}</h1>
+  return wrapSeoMain(`      <h1>${escapeHtml(h1 || title)}</h1>
 ${seoImageHtml(image, imageAlt || title)}
       <p>${escapeHtml(description)}</p>
       <p>
@@ -554,9 +555,17 @@ async function main() {
       throw new Error("API returned 0 published blogs");
     }
   } catch (err) {
-    console.error(`[prerender] blog fetch failed: ${err.message}`);
-    process.exitCode = 1;
-    return;
+    console.warn(
+      `[prerender] live blog fetch skipped (${err.message}); falling back to static BLOG_META_BY_SLUG`
+    );
+    const { BLOG_META_BY_SLUG } = await import("../src/seo/blogMeta.js");
+    blogs = Object.entries(BLOG_META_BY_SLUG).map(([slug, meta]) => ({
+      slug,
+      title: meta.title,
+      meta_title: meta.title,
+      meta_description: meta.description,
+      content: meta.description,
+    }));
   }
 
   const resourceLinks = blogs
@@ -574,6 +583,7 @@ async function main() {
     const url = `${SITE_ORIGIN}${routePath.replace(/\/+$/, "") || ""}`;
     const seoBlock = buildSeoOutlinksBlock({
       title: meta.title,
+      h1: meta.h1,
       description: meta.description,
       resourceLinks: listingPaths.has(routePath) ? resourceLinks : [],
       image: DEFAULT_OG_IMAGE,

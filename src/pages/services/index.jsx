@@ -7,12 +7,24 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 const VALID_TABS = new Set(["will", "trust"]);
 
+const TAB_HEADERS = {
+  will: {
+    title: "Will Drafting & Estate Planning",
+    subtitle: "Protect your family's wealth with expert Will drafting and estate planning services in India.",
+  },
+  trust: {
+    title: "Private Family Trust Services",
+    subtitle: "Set up and manage private family trusts with expert guidance on formation, deed drafting and succession.",
+  },
+};
+
 function Services() {
   const { tab } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const initialTab = tab === "trust" ? "trust" : "will";
+  const header = TAB_HEADERS[initialTab] || TAB_HEADERS.will;
 
   // Canonical paths: /services/will | /services/trust (no query strings)
   useEffect(() => {
@@ -46,8 +58,8 @@ function Services() {
       <div className="h-[64px] md:h-[80px]" />
 
       <Header
-        title="Services"
-        subtitle="Understand succession laws and secure your estate with clarity and confidence."
+        title={header.title}
+        subtitle={header.subtitle}
       />
       <main className="flex-grow bg-white text-black">
         <OurServices initialTab={initialTab} />

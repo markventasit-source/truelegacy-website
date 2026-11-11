@@ -22,9 +22,7 @@ function asyncCssPlugin() {
           const activate =
             "(function(l){function r(){l.media='all';document.documentElement.classList.add('css-ready');document.dispatchEvent(new Event('tl-css-ready'))}if(!l)return;if(l.sheet)r();else l.addEventListener('load',r);})(document.currentScript.previousElementSibling);";
           return [
-            `<link rel="preload" as="style" href="${href}"${crossorigin}>`,
             `<link rel="stylesheet" href="${href}"${crossorigin} media="print" data-tl-async-css>`,
-            `<script>${activate}</script>`,
             `<noscript><link rel="stylesheet" href="${href}"${crossorigin}></noscript>`,
           ].join("\n    ");
         }
@@ -33,39 +31,9 @@ function asyncCssPlugin() {
   };
 }
 
-/** Move Vite modulepreloads ahead of the entry script so they fetch in parallel. */
-function criticalPathPlugin() {
-  return {
-    name: "critical-path",
-    enforce: "post",
-    transformIndexHtml: {
-      order: "post",
-      handler(html) {
-        const preloadTags =
-          html.match(/<link rel="modulepreload"[^>]*>/g) ?? [];
-
-        if (preloadTags.length === 0) return html;
-
-        let next = html.replace(/<link rel="modulepreload"[^>]*>\n?/g, "");
-
-        const entryScript = next.match(
-          /<script type="module" crossorigin src="[^"]+"><\/script>/
-        )?.[0];
-        if (!entryScript) return html;
-
-        next = next.replace(
-          entryScript,
-          `${preloadTags.join("\n    ")}\n    ${entryScript}`
-        );
-        return next;
-      },
-    },
-  };
-}
-
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), asyncCssPlugin(), criticalPathPlugin()],
+  plugins: [react(), tailwindcss(), asyncCssPlugin()],
   build: {
     cssCodeSplit: true,
     rollupOptions: {

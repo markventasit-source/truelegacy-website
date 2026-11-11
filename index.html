@@ -5,9 +5,8 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google-site-verification" content="GPgPKtab6Be1X-O7gjOec3m2kPeu3ZADczoJn2RMoKQ" />
-    <!-- Preload Urania weights used across the site to prevent FOUT -->
+    <!-- Preload Urania weights used on initial render to prevent FOUT -->
     <link rel="preload" href="/src/assets/font/Urania-Regular.otf" as="font" type="font/otf" crossorigin="anonymous" />
-    <link rel="preload" href="/src/assets/font/Urania-Medium.otf" as="font" type="font/otf" crossorigin="anonymous" />
     <link rel="preload" href="/src/assets/font/Urania-Bold.otf" as="font" type="font/otf" crossorigin="anonymous" />
     <!-- Make Urania active in the browser's font cache before React mounts,
          eliminating the swap flash. Font paths here must match @font-face in index.css. -->
@@ -35,70 +34,8 @@
       }
       body { font-family: "Urania", system-ui, sans-serif; }
     </style>
-    <!--
-      Analytics / Meta Pixel: deferred until after load + idle.
-      Cache-Control on connect.facebook.net is controlled by Meta (often ~20m) —
-      we cannot lengthen it. Deferring keeps these off the LCP critical path.
-    -->
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-
-      /* Official Meta stub — queues calls until fbevents.js loads */
-      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];}(window,document);
-      fbq('init', '1397319418949240');
-      fbq('track', 'PageView');
-
-      (function () {
-        var loaded = false;
-        function loadThirdParty() {
-          if (loaded) return;
-          loaded = true;
-
-          var ga = document.createElement('script');
-          ga.async = true;
-          ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-GR80GZBEVS';
-          document.head.appendChild(ga);
-          gtag('js', new Date());
-          gtag('config', 'G-GR80GZBEVS');
-
-          var fb = document.createElement('script');
-          fb.async = true;
-          fb.src = 'https://connect.facebook.net/en_US/fbevents.js';
-          document.head.appendChild(fb);
-        }
-
-        function arm() {
-          if ('requestIdleCallback' in window) {
-            requestIdleCallback(loadThirdParty, { timeout: 2000 });
-          } else {
-            setTimeout(loadThirdParty, 1);
-          }
-        }
-
-        function start() { setTimeout(arm, 5500); }
-
-        if (document.readyState === 'complete') start();
-        else window.addEventListener('load', start, { once: true });
-      })();
-    </script>
-    <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=1397319418949240&ev=PageView&noscript=1"
-      loading="lazy"
-      decoding="async"
-      /></noscript>
-
-    <!-- Hide static LCP shell on non-home routes (runs before first paint) -->
-    <script>
-      (function () {
-        var path = location.pathname.replace(/\/+$/, "") || "/";
-        if (path !== "/") {
-          document.documentElement.classList.add("hide-lcp-shell");
-        }
-      })();
-    </script>
+    <!-- External boot script: route check, async CSS activation, deferred analytics -->
+    <script src="/boot.js"></script>
 
     <!-- Critical first-paint + LCP shell (heights must match HeaderHome) -->
     <style>
@@ -198,8 +135,8 @@
       fetchpriority="high"
     />
 
-    <title>Expert Estate Planning Trusts &amp; Succession | Truelegacy</title>
-    <meta name="description" content="Secure your family's future with expert estate planning trusts. Truelegacy helps you manage assets and succession. Contact us to build your legacy right now." />
+    <title>Estate Planning &amp; Succession Planning in India | Truelegacy</title>
+    <meta name="description" content="Protect your family's wealth with Truelegacy's Estate Planning services in India. Explore Will Drafting, Private Family Trusts and Succession Planning solutions." />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <link rel="canonical" href="https://truelegacyindia.com" />
@@ -208,13 +145,13 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Truelegacy" />
     <meta property="og:url" content="https://truelegacyindia.com" />
-    <meta property="og:title" content="Expert Estate Planning Trusts &amp; Succession | Truelegacy" />
-    <meta property="og:description" content="Secure your family's future with expert estate planning trusts. Truelegacy helps you manage assets and succession. Contact us to build your legacy right now." />
+    <meta property="og:title" content="Estate Planning &amp; Succession Planning in India | Truelegacy" />
+    <meta property="og:description" content="Protect your family's wealth with Truelegacy's Estate Planning services in India. Explore Will Drafting, Private Family Trusts and Succession Planning solutions." />
     <meta property="og:image" content="https://truelegacyindia.com/og-image.jpg" />
 
     <!-- Default Twitter (Home Page) -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Expert Estate Planning Trusts &amp; Succession | Truelegacy" />
+    <meta name="twitter:title" content="Estate Planning &amp; Succession Planning in India | Truelegacy" />
     <meta name="twitter:image" content="https://truelegacyindia.com/og-image.jpg" />
     <meta name="twitter:url" content="https://truelegacyindia.com" />
 
@@ -302,6 +239,11 @@
 
   </head>
   <body>
+    <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1397319418949240&ev=PageView&noscript=1"
+      loading="lazy"
+      decoding="async"
+      /></noscript>
     <!-- Spacer holds hero height in document flow; shell overlays it for LCP -->
     <div id="lcp-hero-spacer" aria-hidden="true"></div>
     <div id="hero-lcp-shell" aria-hidden="true">
@@ -325,11 +267,11 @@
       response — SPA JS alone is invisible to many SEO scanners.
     -->
     <main id="seo-static-content">
-      <h1>Expert Estate Planning, Trusts &amp; Succession Planning | Truelegacy</h1>
+      <h1>Protect Your Family's Wealth with Expert Estate Planning</h1>
       <p>
-        Secure your family's future with expert estate planning trusts. Truelegacy helps
-        individuals, families, business owners, and NRIs manage assets and succession with
-        clear, practical guidance. Contact us to build your legacy with confidence.
+        Protect your family's wealth with Truelegacy's Estate Planning services in India.
+        Explore Will Drafting, Private Family Trusts and Succession Planning solutions for
+        individuals, families, business owners, and NRIs.
       </p>
       <p>
         From wills and private family trusts to legal heir identification and readiness
@@ -384,13 +326,5 @@
 
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <script>
-      /* Fallback if stylesheet onload is missed */
-      setTimeout(function () {
-        if (document.documentElement.classList.contains("css-ready")) return;
-        document.documentElement.classList.add("css-ready");
-        document.dispatchEvent(new Event("tl-css-ready"));
-      }, 2500);
-    </script>
   </body>
 </html>

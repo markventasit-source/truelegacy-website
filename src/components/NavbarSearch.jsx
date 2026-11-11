@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllBlogs, formatContentTypeLabel } from "../api/blogsApi";
 
 /* ─── tiny debounce hook ───────────────────────────────────────────── */
 function useDebounce(value, delay = 300) {
@@ -95,22 +94,26 @@ const NavbarSearch = () => {
     if (!isOpen || fetched) return;
     let active = true;
     setLoading(true);
-    getAllBlogs({ status: "published", limit: 500 })
-      .then((res) => {
+
+    import("../api/blogsApi")
+      .then(({ getAllBlogs, formatContentTypeLabel }) => {
         if (!active) return;
-        const list = Array.isArray(res?.data) ? res.data : [];
-        setAllBlogs(
-          list.map((b) => ({
-            id: b._id,
-            slug: b.slug,
-            title: b.title || "",
-            type: formatContentTypeLabel(b.type),
-            desc: b.meta_description || b.description || "",
-            image: b.image || "",
-            image_alt: b.image_alt || b.title || "",
-          }))
-        );
-        setFetched(true);
+        return getAllBlogs({ status: "published", limit: 500 }).then((res) => {
+          if (!active) return;
+          const list = Array.isArray(res?.data) ? res.data : [];
+          setAllBlogs(
+            list.map((b) => ({
+              id: b._id,
+              slug: b.slug,
+              title: b.title || "",
+              type: formatContentTypeLabel(b.type),
+              desc: b.meta_description || b.description || "",
+              image: b.image || "",
+              image_alt: b.image_alt || b.title || "",
+            }))
+          );
+          setFetched(true);
+        });
       })
       .catch(() => {
         if (!active) return;

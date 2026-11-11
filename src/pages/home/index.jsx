@@ -1,10 +1,9 @@
 import { lazy, Suspense } from "react";
 import HeaderHome from "../../components/home/HeaderHome";
-/** Above-fold on desktop — keep in home chunk to avoid an extra critical-path hop. */
-import PlanYourLegacy from "../../components/home/PlanYourLegacy";
 import SurveyFloatHost from "../../components/survey/SurveyFloatHost";
 import LazyWhenVisible from "../../ui/LazyWhenVisible";
 
+const PlanYourLegacy = lazy(() => import("../../components/home/PlanYourLegacy"));
 const WhoweAreNew = lazy(() => import("../../components/home/WhoweAreNew"));
 const TrueLegacyInstructions = lazy(() =>
   import("../../components/home/TrueLegacyInstructions")
@@ -19,7 +18,11 @@ const HomePage = () => {
   return (
     <main className="min-h-screen">
       <HeaderHome />
-      <PlanYourLegacy />
+      <LazyWhenVisible minHeight={400} rootMargin="120px">
+        <Suspense fallback={null}>
+          <PlanYourLegacy />
+        </Suspense>
+      </LazyWhenVisible>
       <SurveyFloatHost />
       <LazyWhenVisible minHeight={520} rootMargin="60px">
         <Suspense fallback={null}>

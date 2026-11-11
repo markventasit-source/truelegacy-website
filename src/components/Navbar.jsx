@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 
 import { NavLink, useNavigate, useLocation, Link } from "react-router-dom";
 import Logo from "../assets/truelagacylogo.webp";
@@ -9,7 +9,8 @@ import CloseIcon from "../assets/cancel-01.webp";
 import StyledButton from "../ui/StyledButton";
 import ArrowDownIcon from "../assets/icon/arrow-down-01-sharp.webp";
 import FaviconIcon from "../assets/icon/favicon.png";
-import NavbarSearch from "./NavbarSearch";
+
+const NavbarSearch = lazy(() => import("./NavbarSearch"));
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -313,7 +314,9 @@ const Navbar = () => {
         <div className="flex-none flex items-center justify-end gap-3">
           {/* Search – visible on desktop and tablet */}
           <div className="hidden lg:flex items-center">
-            <NavbarSearch />
+            <Suspense fallback={null}>
+              <NavbarSearch />
+            </Suspense>
           </div>
 
           {/* Desktop / tablet: login pill */}
@@ -408,7 +411,9 @@ const Navbar = () => {
 
             {/* Mobile search */}
             <div className="px-5 pb-2">
-              <NavbarSearch />
+              <Suspense fallback={null}>
+                <NavbarSearch />
+              </Suspense>
             </div>
             {/* Nav links column */}
             <div className="mt-15 flex-1 px-4 space-y-6 text-[21px] font-[Urania] animate-fade-up menu-slide-in">

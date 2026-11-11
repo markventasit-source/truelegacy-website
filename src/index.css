@@ -16,46 +16,6 @@ body {
   }
 }
 
-@font-face {
-  font-family: "Editors Note";
-  src: url("./assets/font/EditorsNote-Thin.otf") format("opentype");
-  font-weight: 100;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Editors Note";
-  src: url("./assets/font/EditorsNote-Hairline.otf") format("opentype");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Editors Note";
-  src: url("./assets/font/EditorsNote-Light.otf") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Editors Note";
-  src: url("./assets/font/EditorsNote-Regular.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Editors Note";
-  src: url("./assets/font/EditorsNote-Medium.otf") format("opentype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* Smooth fade-in animation for result page */
 @keyframes fade-in {
   from {
@@ -79,56 +39,6 @@ body {
 .animate-fade-in-delay-slow {
   animation: fade-in 0.8s ease-out 0.6s both;
 }
-
-@font-face {
-  font-family: "Editors Note";
-  src: url("./assets/font/EditorsNote-Semibold.otf") format("opentype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Editors Note";
-  src: url("./assets/font/EditorsNote-Bold.otf") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Editors Note";
-  src: url("./assets/font/EditorsNote-Italic.otf") format("opentype");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
-/* ===== Custom Font: urania ===== */
-@font-face {
-  font-family: "Urania";
-  src: url("./assets/font/Urania-Thin.otf") format("opentype");
-  font-weight: 100;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Urania";
-  src: url("./assets/font/Urania-ExtraLight.otf") format("opentype");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Urania";
-  src: url("./assets/font/Urania-Light.otf") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
 
 /* Show normal cursor on succession routes */
 body.succession-route,

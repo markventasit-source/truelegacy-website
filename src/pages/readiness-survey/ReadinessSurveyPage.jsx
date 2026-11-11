@@ -118,6 +118,8 @@ const ReadinessSurveyPage = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-white to-[#F6F2E6] md:px-4 md:py-6">
+      {/* Visually-hidden H1 for SEO — page title is communicated by the logo + context */}
+      <h1 className="sr-only">Estate Planning Readiness Survey</h1>
       {/* Header section - Responsive */}
       <div className="relative mx-auto flex w-full max-w-6xl justify-between px-4 pb-0 pt-1 md:px-0 md:pb-0 md:pt-[20px]">
         {/* Desktop Exit button - positioned absolutely */}
