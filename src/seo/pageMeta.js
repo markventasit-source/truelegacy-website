@@ -125,6 +125,12 @@ export const PAGE_META_BY_PATH = {
     description:
       "Explore Truelegacy's Privacy Policy to understand how we safeguard your personal information and maintain transparency in our data practices.",
   },
+  "/404": {
+    title: "Page Not Found | Truelegacy",
+    description:
+      "The page you're looking for doesn't exist or may have been moved.",
+    robots: NOINDEX_ROBOTS,
+  },
 };
 
 export function getPageMeta(pathname) {
@@ -135,7 +141,13 @@ export function getPageMeta(pathname) {
     return { ...PAGE_META_BY_PATH[path], robots };
   }
 
-  return { ...DEFAULT_PAGE_META, robots };
+  // Unknown or 404 route: never index, return 404 meta
+  return {
+    title: "Page Not Found | Truelegacy",
+    description:
+      "The page you're looking for doesn't exist or may have been moved.",
+    robots: NOINDEX_ROBOTS,
+  };
 }
 
 /** Blog/article slugs — prefer API SEO fields, fall back to static map */

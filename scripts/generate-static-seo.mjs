@@ -523,6 +523,50 @@ async function fetchAllPublishedBlogs(env) {
   return blogs;
 }
 
+const build404Html = (baseHtml) => {
+  const content404 = `
+    <main id="seo-static-content" style="min-height: 80vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4rem 1rem; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #F6FFFF;">
+      <div style="max-width: 560px; margin: 0 auto;">
+        <p style="font-size: clamp(80px, 15vw, 160px); font-weight: 700; line-height: 1; color: #132F2C; margin: 0 0 1rem 0;">404</p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 1.5rem;">
+          <span style="height: 1px; width: 48px; background: #D9D9D9;"></span>
+          <span style="height: 8px; width: 8px; border-radius: 50%; background: #065f46;"></span>
+          <span style="height: 1px; width: 48px; background: #D9D9D9;"></span>
+        </div>
+        <h1 style="font-size: clamp(24px, 4vw, 32px); font-weight: 600; line-height: 1.25; color: #132F2C; margin-bottom: 1rem;">Page not found</h1>
+        <p style="font-size: 16px; line-height: 1.6; color: #868989; margin-bottom: 2.5rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+          The page you're looking for doesn't exist or may have been moved. Let's get you back on track.
+        </p>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem;">
+          <a href="/" style="display: inline-block; padding: 0.875rem 2rem; border-radius: 9999px; background-color: #132F2C; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 15px;">Go to Home</a>
+          <a href="/resources" style="display: inline-block; padding: 0.875rem 2rem; border-radius: 9999px; background-color: transparent; border: 1.5px solid #132F2C; color: #132F2C; text-decoration: none; font-weight: 600; font-size: 15px;">Browse Resources</a>
+        </div>
+      </div>
+    </main>`;
+
+  let html = baseHtml
+    .replace(
+      /\s*<!--\s*\n?\s*Static SEO content for crawlers[\s\S]*?-->\s*/i,
+      "\n    "
+    )
+    .replace(/<main id="seo-static-content">[\s\S]*?<\/main>\s*/i, "");
+
+  html = html.replace(/<title>.*?<\/title>/i, `<title>Page Not Found | Truelegacy</title>`);
+  html = replaceMeta(html, "name", "robots", "noindex, nofollow");
+  html = replaceMeta(html, "name", "googlebot", "noindex, nofollow");
+  html = replaceMeta(html, "name", "description", "The page you're looking for doesn't exist or may have been moved.");
+  html = replaceMeta(html, "property", "og:title", "Page Not Found | Truelegacy");
+  html = replaceMeta(html, "property", "og:description", "The page you're looking for doesn't exist or may have been moved.");
+  html = replaceMeta(html, "name", "twitter:title", "Page Not Found | Truelegacy");
+  html = replaceMeta(html, "name", "twitter:description", "The page you're looking for doesn't exist or may have been moved.");
+  // 404 pages must NOT have a canonical tag (prevents soft-404 / homepage canonicalisation)
+  html = html.replace(/<link[^>]*rel=["']canonical["'][^>]*>\s*/i, "");
+  if (/<div id="root"><\/div>/i.test(html)) {
+    html = html.replace(/<div id="root"><\/div>/i, `${content404}\n    <div id="root"></div>`);
+  }
+  return html;
+};
+
 async function main() {
   try {
     await access(DIST_DIR);
@@ -579,7 +623,7 @@ async function main() {
 
   let staticCount = 0;
   for (const [routePath, meta] of Object.entries(PAGE_META_BY_PATH)) {
-    if (routePath === "/") continue;
+    if (routePath === "/" || routePath === "/404") continue;
     const url =
       meta.canonical || `${SITE_ORIGIN}${routePath.replace(/\/+$/, "") || ""}`;
     const seoBlock = buildSeoOutlinksBlock({
@@ -669,6 +713,28 @@ async function main() {
     blogCount += 1;
   }
   console.log(`[prerender] wrote ${blogCount} blog pages.`);
+
+  // 3. Utility app routes (private/flow pages — served with noindex, nofollow)
+  const UTILITY_ROUTES = [
+    "/signin",
+    "/succession/questions",
+    "/succession/view",
+    "/succession/family",
+    "/readiness-survey/result",
+  ];
+  for (const utilRoute of UTILITY_ROUTES) {
+    let html = stripHomeSeoBlock(baseHtml);
+    html = replaceMeta(html, "name", "robots", "noindex, nofollow");
+    html = replaceMeta(html, "name", "googlebot", "noindex, nofollow");
+    await writeRouteHtml(utilRoute, html);
+  }
+  console.log(`[prerender] wrote ${UTILITY_ROUTES.length} utility app pages.`);
+
+  // 4. Custom 404 page (served on actual HTTP 404 responses)
+  const html404 = build404Html(baseHtml);
+  await writeFile(path.join(DIST_DIR, "404.html"), html404, "utf8");
+  await writeRouteHtml("/404", html404);
+  console.log("[prerender] wrote 404.html and /404/index.html.");
 
   const sitemapCount = await writeSitemap(blogs);
   console.log(`[prerender] wrote sitemap.xml with ${sitemapCount} URLs.`);

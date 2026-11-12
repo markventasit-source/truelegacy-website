@@ -49,7 +49,12 @@ function applyMeta(
   const ogType = type || "website";
 
   document.title = title;
-  upsertCanonical(url);
+  if (robots && robots.includes("noindex")) {
+    const el = document.head.querySelector('link[rel="canonical"]');
+    if (el) el.remove();
+  } else {
+    upsertCanonical(url);
+  }
   upsertMeta("name", "robots", robots);
   upsertMeta("name", "googlebot", robots);
   upsertMeta("name", "description", description);
