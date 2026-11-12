@@ -580,7 +580,8 @@ async function main() {
   let staticCount = 0;
   for (const [routePath, meta] of Object.entries(PAGE_META_BY_PATH)) {
     if (routePath === "/") continue;
-    const url = `${SITE_ORIGIN}${routePath.replace(/\/+$/, "") || ""}`;
+    const url =
+      meta.canonical || `${SITE_ORIGIN}${routePath.replace(/\/+$/, "") || ""}`;
     const seoBlock = buildSeoOutlinksBlock({
       title: meta.title,
       h1: meta.h1,

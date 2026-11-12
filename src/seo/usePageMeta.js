@@ -34,15 +34,16 @@ function upsertCanonical(href) {
 }
 
 function applyMeta(
-  { title, description, robots, keywords, image, imageAlt, type },
+  { title, description, robots, keywords, image, imageAlt, type, canonical },
   pathname
 ) {
   // Canonical / OG URL without trailing slash (including homepage).
   const canonicalPath = pathname.replace(/\/+$/, "") || "/";
   const url =
-    canonicalPath === "/"
+    canonical ||
+    (canonicalPath === "/"
       ? SITE_ORIGIN
-      : `${SITE_ORIGIN}${canonicalPath}`;
+      : `${SITE_ORIGIN}${canonicalPath}`);
 
   const shareImage = normalizeShareImageUrl(image, DEFAULT_OG_IMAGE);
   const ogType = type || "website";

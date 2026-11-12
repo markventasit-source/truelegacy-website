@@ -80,6 +80,7 @@ export const PAGE_META_BY_PATH = {
     title: "Estate Planning and Trust Management | Truelegacy Services",
     description:
       "Keep your wealth safe for the next generation. We offer expert trust management and estate planning. Contact Truelegacy Services to start your plan now.",
+    canonical: `${SITE_ORIGIN}/services/will`,
   },
   "/services/will": {
     title: "Will Drafting & Estate Planning Services | Truelegacy",
