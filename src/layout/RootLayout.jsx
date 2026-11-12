@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { lazy, Suspense, useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import WhatsAppFloat from "../components/WhatsAppFloat";
@@ -39,8 +39,19 @@ const scrollToTopSmooth = () => {
 
 const RootLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [showFooter, setShowFooter] = useState(false);
   usePageMeta();
+
+  // Redirect /path/ to /path on the client side (fallback if direct hit bypassed 301)
+  useEffect(() => {
+    if (location.pathname !== "/" && location.pathname.endsWith("/")) {
+      navigate(
+        location.pathname.replace(/\/+$/, "") + location.search + location.hash,
+        { replace: true }
+      );
+    }
+  }, [location.pathname, location.search, location.hash, navigate]);
 
   // Capture ?type= / ?utm_source= from the landing URL once per session
   useEffect(() => {
