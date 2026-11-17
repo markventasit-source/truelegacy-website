@@ -7,7 +7,7 @@
  * article text + internal links). Also regenerates `dist/sitemap.xml` so new
  * `/resources/:slug` posts are discoverable.
  */
-import { readFile, writeFile, mkdir, access } from "node:fs/promises";
+import { readFile, writeFile, mkdir, access, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -405,6 +405,7 @@ const injectPageSeo = (
     type,
     seoBlock,
     jsonLd,
+    appHtml,
   }
 ) => {
   let next = stripExistingJsonLd(html);
@@ -445,7 +446,14 @@ const injectPageSeo = (
     next = next.replace(/<\/head>/i, `    ${jsonLd}\n  </head>`);
   }
 
-  if (!/<main id="seo-static-content">/i.test(next)) {
+  if (appHtml) {
+    if (/<div id="root">[\s\S]*?<\/div>/i.test(next)) {
+      next = next.replace(
+        /<div id="root">[\s\S]*?<\/div>/i,
+        `<div id="root">${appHtml}</div>`
+      );
+    }
+  } else if (!/<main id="seo-static-content">/i.test(next)) {
     const block =
       seoBlock || buildSeoOutlinksBlock({ title, description });
     if (/<div id="root"><\/div>/i.test(next)) {
@@ -617,6 +625,39 @@ async function main() {
   const baseHtml = await readFile(baseHtmlPath, "utf8");
   const env = await loadEnv();
 
+  const DIST_SSR_PATH = path.join(ROOT_DIR, "dist-ssr", "entry-server.js");
+  let ssrRender = null;
+  let ssrRenderBlog = null;
+  try {
+    const ssrMod = await import(DIST_SSR_PATH);
+    ssrRender = ssrMod.render;
+    ssrRenderBlog = ssrMod.renderBlog;
+    console.log("[prerender] loaded SSR module successfully.");
+  } catch (err) {
+    console.warn(
+      `[prerender] SSR module not available (${err.message}); falling back to static blocks.`
+    );
+  }
+
+  // Pre-render actual HTML into homepage <div id="root">
+  if (ssrRender) {
+    try {
+      const homeHtml = ssrRender("/");
+      if (homeHtml && /<div id="root">[\s\S]*?<\/div>/i.test(baseHtml)) {
+        const updatedBaseHtml = baseHtml
+          .replace(
+            /<div id="root">[\s\S]*?<\/div>/i,
+            `<div id="root">${homeHtml}</div>`
+          )
+          .replace(/<main id="seo-static-content">[\s\S]*?<\/main>\s*/i, "");
+        await writeFile(baseHtmlPath, updatedBaseHtml, "utf8");
+        console.log("[prerender] injected full pre-rendered HTML into homepage (dist/index.html).");
+      }
+    } catch (err) {
+      console.warn("[prerender] homepage SSR failed:", err.message);
+    }
+  }
+
   // IMPORTANT: match the <main> id only — a leading <!--[\s\S]*?...--> regex is too
   // greedy and can wipe the entire <head> from an earlier comment.
   const stripHomeSeoBlock = (html) =>
@@ -673,6 +714,15 @@ async function main() {
       ? `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n    </script>`
       : null;
 
+    let appHtml = "";
+    if (ssrRender) {
+      try {
+        appHtml = ssrRender(routePath);
+      } catch (err) {
+        console.warn(`[prerender] SSR render failed for ${routePath}:`, err.message);
+      }
+    }
+
     const html = injectPageSeo(stripHomeSeoBlock(baseHtml), {
       title: meta.title,
       description: meta.description,
@@ -681,6 +731,7 @@ async function main() {
       url: url || SITE_ORIGIN,
       seoBlock,
       jsonLd,
+      appHtml,
     });
     await writeRouteHtml(routePath, html);
     staticCount += 1;
@@ -739,6 +790,23 @@ async function main() {
       faqs: blog.faqs,
     });
 
+    let appHtml = "";
+    if (ssrRenderBlog) {
+      try {
+        appHtml = ssrRenderBlog({
+          title,
+          description,
+          articleText,
+          image,
+          imageAlt,
+          faqs: blog.faqs,
+          relatedLinks,
+        });
+      } catch (err) {
+        console.warn(`[prerender] SSR renderBlog failed for ${blog.slug}:`, err.message);
+      }
+    }
+
     const html = injectPageSeo(stripHomeSeoBlock(baseHtml), {
       title,
       description,
@@ -748,6 +816,7 @@ async function main() {
       type: "article",
       seoBlock,
       jsonLd,
+      appHtml,
     });
     await writeRouteHtml(`/resources/${blog.slug}`, html);
     blogCount += 1;
@@ -778,6 +847,12 @@ async function main() {
 
   const sitemapCount = await writeSitemap(blogs);
   console.log(`[prerender] wrote sitemap.xml with ${sitemapCount} URLs.`);
+
+  try {
+    await rm(path.join(ROOT_DIR, "dist-ssr"), { recursive: true, force: true });
+  } catch {
+    // ignore
+  }
 
   console.log(
     `[prerender] done — ${staticCount + blogCount} route(s) prerendered with correct SEO tags.`
