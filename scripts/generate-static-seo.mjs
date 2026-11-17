@@ -15,8 +15,10 @@ import {
   PAGE_META_BY_PATH,
   SITE_ORIGIN,
   DEFAULT_OG_IMAGE,
+  canonicalUrl,
   normalizeShareImageUrl,
 } from "../src/seo/pageMeta.js";
+import { PAGE_SCHEMAS } from "../src/seo/pageSchemas.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, "..");
@@ -133,7 +135,7 @@ const SEO_OUTLINK_PATHS = [
 
 const siteNavLinksHtml = () =>
   SEO_OUTLINK_PATHS.map(([pathName, label]) => {
-    const href = pathName === "/" ? SITE_ORIGIN : `${SITE_ORIGIN}${pathName}`;
+    const href = canonicalUrl(pathName);
     return `          <li><a href="${escapeHtml(href)}">${escapeHtml(label)}</a></li>`;
   }).join("\n");
 
@@ -208,7 +210,7 @@ ${siteNavLinksHtml()}
       <h2>Speak With Our Team</h2>
       <p>
         Ready to protect your family's future?
-        <a href="${escapeHtml(`${SITE_ORIGIN}/contact`)}">Schedule a consultation</a>
+        <a href="${escapeHtml(canonicalUrl("/contact"))}">Schedule a consultation</a>
         or email
         <a href="mailto:info@truelegacy.in">info@truelegacy.in</a>
         / call
@@ -281,9 +283,9 @@ ${siteNavLinksHtml()}
         </ul>
       </nav>
       <p>
-        <a href="${escapeHtml(`${SITE_ORIGIN}/resources`)}">Back to all resources</a>
+        <a href="${escapeHtml(canonicalUrl("/resources"))}">Back to all resources</a>
         ·
-        <a href="${escapeHtml(`${SITE_ORIGIN}/contact`)}">Schedule a consultation</a>
+        <a href="${escapeHtml(canonicalUrl("/contact"))}">Schedule a consultation</a>
       </p>`);
 };
 
@@ -296,57 +298,82 @@ const buildArticleJsonLd = ({
   dateModified,
   faqs = [],
 }) => {
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: title,
-    description,
-    image: [image],
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": url,
-    },
-    author: {
-      "@type": "Organization",
-      name: "Truelegacy",
-      url: SITE_ORIGIN,
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Truelegacy",
-      url: SITE_ORIGIN,
-      logo: {
-        "@type": "ImageObject",
-        url: DEFAULT_OG_IMAGE,
+  const graph = [
+    {
+      "@type": "Article",
+      "@id": `${url}#article`,
+      isPartOf: {
+        "@id": `${SITE_ORIGIN}/#website`,
       },
+      headline: title,
+      description,
+      image: image ? [image] : undefined,
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": url,
+      },
+      author: {
+        "@id": `${SITE_ORIGIN}/#organization`,
+      },
+      publisher: {
+        "@id": `${SITE_ORIGIN}/#organization`,
+      },
+      inLanguage: "en-IN",
     },
-  };
-  if (datePublished) data.datePublished = datePublished;
-  if (dateModified) data.dateModified = dateModified;
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${url}#breadcrumb`,
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: `${SITE_ORIGIN}/`,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Resources",
+          item: `${SITE_ORIGIN}/resources`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: title,
+          item: url,
+        },
+      ],
+    },
+  ];
+
+  if (datePublished) graph[0].datePublished = datePublished;
+  if (dateModified) graph[0].dateModified = dateModified;
 
   const faqItems = Array.isArray(faqs)
     ? faqs.filter((f) => f?.question && f?.answer)
     : [];
-  const scripts = [
-    `<script type="application/ld+json">${JSON.stringify(data)}</script>`,
-  ];
+
   if (faqItems.length > 0) {
-    scripts.push(
-      `<script type="application/ld+json">${JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: faqItems.map((f) => ({
-          "@type": "Question",
-          name: f.question,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: f.answer,
-          },
-        })),
-      })}</script>`
-    );
+    graph.push({
+      "@type": "FAQPage",
+      "@id": `${url}#faq`,
+      mainEntity: faqItems.map((f) => ({
+        "@type": "Question",
+        name: f.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: f.answer,
+        },
+      })),
+    });
   }
-  return scripts.join("\n");
+
+  const payload = {
+    "@context": "https://schema.org",
+    "@graph": graph,
+  };
+
+  return `<script type="application/ld+json">\n${JSON.stringify(payload, null, 2)}\n    </script>`;
 };
 
 const extractBlogPlainText = (blog) => {
@@ -364,6 +391,9 @@ const extractBlogPlainText = (blog) => {
   return text.slice(0, 6000);
 };
 
+const stripExistingJsonLd = (html) =>
+  html.replace(/\s*<script type="application\/ld\+json">[\s\S]*?<\/script>\s*/gi, "\n");
+
 const injectPageSeo = (
   html,
   {
@@ -377,7 +407,7 @@ const injectPageSeo = (
     jsonLd,
   }
 ) => {
-  let next = html;
+  let next = stripExistingJsonLd(html);
   const shareImage = normalizeShareImageUrl(image, DEFAULT_OG_IMAGE);
   const ogType = type || "website";
 
@@ -449,8 +479,7 @@ async function writeSitemap(blogs) {
   const urls = [];
 
   for (const routePath of STATIC_SITEMAP_PATHS) {
-    const loc =
-      routePath === "/" ? SITE_ORIGIN : `${SITE_ORIGIN}${routePath}`;
+    const loc = canonicalUrl(routePath);
     const priority =
       routePath === "/" || routePath === "/resources" || routePath === "/contact"
         ? "1.0"
@@ -461,10 +490,16 @@ async function writeSitemap(blogs) {
   for (const blog of blogs) {
     if (!blog?.slug) continue;
     urls.push({
-      loc: `${SITE_ORIGIN}/resources/${blog.slug}`,
+      loc: canonicalUrl(`/resources/${blog.slug}`),
       lastmod: toSitemapLastmod(blog.updatedAt || blog.createdAt),
       priority: "0.8",
     });
+  }
+
+  for (const { loc } of urls) {
+    if (loc !== SITE_ORIGIN && loc.endsWith("/")) {
+      throw new Error(`Sitemap loc must use the no-trailing-slash format: ${loc}`);
+    }
   }
 
   const body = urls
@@ -544,7 +579,7 @@ const build404Html = (baseHtml) => {
       </div>
     </main>`;
 
-  let html = baseHtml
+  let html = stripExistingJsonLd(baseHtml)
     .replace(
       /\s*<!--\s*\n?\s*Static SEO content for crawlers[\s\S]*?-->\s*/i,
       "\n    "
@@ -615,7 +650,7 @@ async function main() {
   const resourceLinks = blogs
     .filter((b) => b?.slug)
     .map((b) => ({
-      href: `${SITE_ORIGIN}/resources/${b.slug}`,
+      href: canonicalUrl(`/resources/${b.slug}`),
       label: b.title || b.meta_title || b.slug,
     }));
 
@@ -624,8 +659,7 @@ async function main() {
   let staticCount = 0;
   for (const [routePath, meta] of Object.entries(PAGE_META_BY_PATH)) {
     if (routePath === "/" || routePath === "/404") continue;
-    const url =
-      meta.canonical || `${SITE_ORIGIN}${routePath.replace(/\/+$/, "") || ""}`;
+    const url = meta.canonical || canonicalUrl(routePath);
     const seoBlock = buildSeoOutlinksBlock({
       title: meta.title,
       h1: meta.h1,
@@ -634,6 +668,11 @@ async function main() {
       image: DEFAULT_OG_IMAGE,
       imageAlt: meta.title,
     });
+    const schema = PAGE_SCHEMAS[routePath];
+    const jsonLd = schema
+      ? `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n    </script>`
+      : null;
+
     const html = injectPageSeo(stripHomeSeoBlock(baseHtml), {
       title: meta.title,
       description: meta.description,
@@ -641,6 +680,7 @@ async function main() {
       image: DEFAULT_OG_IMAGE,
       url: url || SITE_ORIGIN,
       seoBlock,
+      jsonLd,
     });
     await writeRouteHtml(routePath, html);
     staticCount += 1;
@@ -658,7 +698,7 @@ async function main() {
       .slice(0, 300);
     const keywords = blog.meta_keywords || "";
     const image = normalizeShareImageUrl(blog.image, DEFAULT_OG_IMAGE);
-    const url = `${SITE_ORIGIN}/resources/${blog.slug}`;
+    const url = canonicalUrl(`/resources/${blog.slug}`);
     const articleText = extractBlogPlainText(blog);
 
     const relatedIds = Array.isArray(blog.related_blogs)
@@ -675,7 +715,7 @@ async function main() {
       )
       .slice(0, relatedIds.length > 0 ? 6 : 8)
       .map((b) => ({
-        href: `${SITE_ORIGIN}/resources/${b.slug}`,
+        href: canonicalUrl(`/resources/${b.slug}`),
         label: b.title || b.meta_title || b.slug,
       }));
 
@@ -723,7 +763,7 @@ async function main() {
     "/readiness-survey/result",
   ];
   for (const utilRoute of UTILITY_ROUTES) {
-    let html = stripHomeSeoBlock(baseHtml);
+    let html = stripExistingJsonLd(stripHomeSeoBlock(baseHtml));
     html = replaceMeta(html, "name", "robots", "noindex, nofollow");
     html = replaceMeta(html, "name", "googlebot", "noindex, nofollow");
     await writeRouteHtml(utilRoute, html);

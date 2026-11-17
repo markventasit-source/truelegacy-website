@@ -11,7 +11,7 @@ import AskAiPills from "../AskAiPills";
 import { SITE_ORIGIN } from "../../seo/pageMeta";
 
 /** Prompt pre-filled when the visitor clicks "Ask ChatGPT / Ask Claude" in the hero. */
-const HOME_ASK_AI_PROMPT = `I'm looking to protect my family's wealth and secure my legacy for future generations. How can Truelegacy (https://truelegacyindia.com/) help me with Will drafting, succession planning, and private family trusts to ensure a smooth and legally sound transfer of my assets in India?`;
+const HOME_ASK_AI_PROMPT = `I'm looking to protect my family's wealth and secure my legacy for future generations. How can Truelegacy (${SITE_ORIGIN}) help me with Will drafting, succession planning, and private family trusts to ensure a smooth and legally sound transfer of my assets in India?`;
 
 /** Stable public URLs — avoid tiny shared-asset JS chunks on the critical path. */
 const questionIcon = "/accent-mark.webp";

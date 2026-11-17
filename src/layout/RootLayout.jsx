@@ -43,13 +43,17 @@ const RootLayout = () => {
   const [showFooter, setShowFooter] = useState(false);
   usePageMeta();
 
-  // Redirect /path/ to /path on the client side (fallback if direct hit bypassed 301)
+  // Client fallback: preferred URLs never have a trailing slash.
+  // `/services` and `/services/` both go straight to `/services/will` (no chain).
   useEffect(() => {
+    const suffix = location.search + location.hash;
+    const stripped = location.pathname.replace(/\/+$/, "") || "/";
+    if (stripped === "/services") {
+      navigate(`/services/will${suffix}`, { replace: true });
+      return;
+    }
     if (location.pathname !== "/" && location.pathname.endsWith("/")) {
-      navigate(
-        location.pathname.replace(/\/+$/, "") + location.search + location.hash,
-        { replace: true }
-      );
+      navigate(`${stripped}${suffix}`, { replace: true });
     }
   }, [location.pathname, location.search, location.hash, navigate]);
 

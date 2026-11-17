@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import StyledButton from "../../ui/StyledButton";
@@ -6,8 +7,59 @@ import truelegacyLogo from "../../assets/img/Group (1).webp";
 import headerBackgroundDecor from "../../assets/img/backround.png";
 import headerTriangleDecor from "../../assets/img/Frame 2147224880.png";
 
+const SUCCESSION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://truelegacyindia.com/succession#application",
+      "name": "Truelegacy Legal Heir Identification Tool",
+      "url": "https://truelegacyindia.com/succession",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web Browser",
+      "description": "An interactive family tree and inheritance calculation tool designed to help users understand potential legal heirs under applicable succession laws.",
+      "provider": { "@id": "https://truelegacyindia.com/#organization" },
+      "inLanguage": "en-IN",
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://truelegacyindia.com/succession#webpage",
+      "url": "https://truelegacyindia.com/succession",
+      "name": "Legal Heir Identification Tool | Truelegacy",
+      "isPartOf": { "@id": "https://truelegacyindia.com/#website" },
+      "mainEntity": { "@id": "https://truelegacyindia.com/succession#application" },
+      "inLanguage": "en-IN",
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://truelegacyindia.com/succession#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://truelegacyindia.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Legal Heir Identification Tool", "item": "https://truelegacyindia.com/succession" },
+      ],
+    },
+  ],
+};
+
 const SuccessionLanding = () => {
   const navigate = useNavigate();
+
+  // Inject page-specific JSON-LD; clean up on unmount
+  useEffect(() => {
+    const id = "succession-page-jsonld";
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement("script");
+      el.type = "application/ld+json";
+      el.id = id;
+      document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(SUCCESSION_JSON_LD);
+    return () => {
+      const script = document.getElementById(id);
+      if (script) script.remove();
+    };
+  }, []);
 
   return (
     <motion.div

@@ -11,8 +11,47 @@ import trueLegacyLogo from "../../assets/truelagacylogo.webp";
 import backArrowIcon from "../../assets/img/survey/bx_arrow-back.svg";
 import "../../styles/dm-sans.css";
 
+const READINESS_SURVEY_JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://truelegacyindia.com/readiness-survey#webpage",
+      "url": "https://truelegacyindia.com/readiness-survey",
+      "name": "Estate Planning Readiness Survey | Truelegacy",
+      "description": "Assess your estate planning readiness and identify areas where you may need to plan for your family's wealth, assets and succession.",
+      "isPartOf": { "@id": "https://truelegacyindia.com/#website" },
+      "about": { "@id": "https://truelegacyindia.com/#organization" },
+      "inLanguage": "en-IN",
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://truelegacyindia.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Estate Planning Readiness Survey", "item": "https://truelegacyindia.com/readiness-survey" },
+      ],
+    },
+  ],
+};
+
 const ReadinessSurveyPage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const id = "readiness-survey-page-jsonld";
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement("script");
+      el.type = "application/ld+json";
+      el.id = id;
+      document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(READINESS_SURVEY_JSON_LD);
+    return () => {
+      const script = document.getElementById(id);
+      if (script) script.remove();
+    };
+  }, []);
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

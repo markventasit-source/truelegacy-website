@@ -3,11 +3,30 @@ import { useLocation } from "react-router-dom";
 import {
   DEFAULT_OG_IMAGE,
   GA_MEASUREMENT_ID,
+  canonicalPathname,
+  canonicalUrl,
   getBlogPageMeta,
   getPageMeta,
   normalizeShareImageUrl,
-  SITE_ORIGIN,
 } from "./pageMeta";
+import { PAGE_SCHEMAS, buildArticleSchema } from "./pageSchemas";
+
+const PAGE_JSON_LD_ID = "page-jsonld";
+
+function upsertJsonLd(schema) {
+  let el = document.getElementById(PAGE_JSON_LD_ID);
+  if (schema) {
+    if (!el) {
+      el = document.createElement("script");
+      el.type = "application/ld+json";
+      el.id = PAGE_JSON_LD_ID;
+      document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(schema);
+  } else if (el) {
+    el.remove();
+  }
+}
 
 function upsertMeta(attr, key, content) {
   if (!content) return;
@@ -38,12 +57,7 @@ function applyMeta(
   pathname
 ) {
   // Canonical / OG URL without trailing slash (including homepage).
-  const canonicalPath = pathname.replace(/\/+$/, "") || "/";
-  const url =
-    canonical ||
-    (canonicalPath === "/"
-      ? SITE_ORIGIN
-      : `${SITE_ORIGIN}${canonicalPath}`);
+  const url = canonical || canonicalUrl(pathname);
 
   const shareImage = normalizeShareImageUrl(image, DEFAULT_OG_IMAGE);
   const ogType = type || "website";
@@ -103,12 +117,13 @@ export function usePageMeta() {
 
   useEffect(() => {
     let cancelled = false;
-    const path = pathname.replace(/\/+$/, "") || "/";
+    const path = canonicalPathname(pathname);
     const baseMeta = getPageMeta(pathname);
     const blogMatch = path.match(/^\/resources\/([^/]+)$/);
 
     if (blogMatch) {
-      getBlogPageMeta(blogMatch[1]).then((blogMeta) => {
+      const slug = blogMatch[1];
+      getBlogPageMeta(slug).then((blogMeta) => {
         if (cancelled) return;
         applyMeta(
           blogMeta
@@ -116,6 +131,20 @@ export function usePageMeta() {
             : { ...baseMeta, image: DEFAULT_OG_IMAGE },
           pathname
         );
+        if (blogMeta) {
+          upsertJsonLd(
+            buildArticleSchema({
+              slug,
+              title: blogMeta.title,
+              description: blogMeta.description,
+              image: blogMeta.image,
+              datePublished: blogMeta.datePublished,
+              dateModified: blogMeta.dateModified,
+            })
+          );
+        } else {
+          upsertJsonLd(null);
+        }
       });
       return () => {
         cancelled = true;
@@ -123,6 +152,7 @@ export function usePageMeta() {
     }
 
     applyMeta({ ...baseMeta, image: baseMeta.image || DEFAULT_OG_IMAGE }, pathname);
+    upsertJsonLd(PAGE_SCHEMAS[path] || null);
     return undefined;
   }, [pathname]);
 }

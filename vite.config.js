@@ -2,6 +2,45 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
+/**
+ * Preferred URLs have no trailing slash. 301 the slash form (and /services)
+ * in Vite dev/preview so local behavior matches production nginx.
+ */
+function canonicalUrlRedirectPlugin() {
+  const middleware = (req, res, next) => {
+    const raw = req.url || "/";
+    const qIndex = raw.indexOf("?");
+    const pathname = qIndex === -1 ? raw : raw.slice(0, qIndex);
+    const search = qIndex === -1 ? "" : raw.slice(qIndex);
+
+    if (pathname === "/services" || pathname === "/services/") {
+      res.statusCode = 301;
+      res.setHeader("Location", `/services/will${search}`);
+      res.end();
+      return;
+    }
+
+    if (pathname.length > 1 && /\/+$/.test(pathname)) {
+      res.statusCode = 301;
+      res.setHeader("Location", `${pathname.replace(/\/+$/, "")}${search}`);
+      res.end();
+      return;
+    }
+
+    next();
+  };
+
+  return {
+    name: "canonical-url-redirects",
+    configureServer(server) {
+      server.middlewares.use(middleware);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(middleware);
+    },
+  };
+}
+
 /** Load built CSS without blocking first paint (Lighthouse render-blocking).
  *  Avoids inline onload= handlers (blocked by CSP script-src without unsafe-hashes). */
 function asyncCssPlugin() {
@@ -33,7 +72,7 @@ function asyncCssPlugin() {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), asyncCssPlugin()],
+  plugins: [canonicalUrlRedirectPlugin(), react(), tailwindcss(), asyncCssPlugin()],
   build: {
     cssCodeSplit: true,
     rollupOptions: {

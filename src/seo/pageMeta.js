@@ -1,5 +1,25 @@
-/** Canonical site origin. */
+/** Canonical site origin (no trailing slash). */
 export const SITE_ORIGIN = "https://truelegacyindia.com";
+
+/**
+ * Preferred URL format: no trailing slash.
+ * Homepage canonical is `https://truelegacyindia.com` (not `...com/`).
+ * `/services` is not a canonical page — it 301s to `/services/will`.
+ */
+export function canonicalPathname(pathname) {
+  const raw = String(pathname || "/")
+    .split("?")[0]
+    .split("#")[0]
+    .replace(/\/+$/, "");
+  const path = raw || "/";
+  if (path === "/services") return "/services/will";
+  return path;
+}
+
+export function canonicalUrl(pathname) {
+  const path = canonicalPathname(pathname);
+  return path === "/" ? SITE_ORIGIN : `${SITE_ORIGIN}${path}`;
+}
 
 /** Default share image (1200×630) — used when a page has no featured image. */
 export const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/og-image.jpg`;
@@ -134,7 +154,7 @@ export const PAGE_META_BY_PATH = {
 };
 
 export function getPageMeta(pathname) {
-  const path = pathname.replace(/\/+$/, "") || "/";
+  const path = canonicalPathname(pathname);
   const robots = NOINDEX_PATHS.has(path) ? NOINDEX_ROBOTS : DEFAULT_ROBOTS;
 
   if (PAGE_META_BY_PATH[path]) {
@@ -188,6 +208,8 @@ export async function getBlogPageMeta(slug) {
           keywords: String(blog.meta_keywords || "").trim(),
           image: normalizeShareImageUrl(blog.image),
           imageAlt: blog.image_alt || blog.imageAlt || blog.title || "",
+          datePublished: blog.createdAt || undefined,
+          dateModified: blog.updatedAt || blog.createdAt || undefined,
           type: "article",
         };
       }

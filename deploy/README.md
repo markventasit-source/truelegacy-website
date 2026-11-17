@@ -1,5 +1,34 @@
 # Production nginx (truelegacyindia.com)
 
+## Canonical URLs (no trailing slash)
+
+Preferred format is **HTTPS, non-WWW, no trailing slash**:
+
+- `https://truelegacyindia.com/services/will/` → **301** `https://truelegacyindia.com/services/will`
+- `https://truelegacyindia.com/services` and `/services/` → **301** `/services/will` (one hop)
+- Sitemap, canonical tags, and internal links already omit the trailing slash
+
+CI does **not** update nginx site config. Merge
+[`nginx-truelegacyindia.conf`](./nginx-truelegacyindia.conf) into the live
+`server` blocks (HTTP, HTTPS www, and HTTPS apex), then:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Confirm a single 301 (no chain) and that the slashless URL is 200:
+
+```bash
+curl -sI https://truelegacyindia.com/services/will/ | grep -iE 'HTTP/|location'
+# Expect: 301  Location: https://truelegacyindia.com/services/will
+
+curl -sI https://truelegacyindia.com/services/will | grep -iE 'HTTP/'
+# Expect: 200
+
+curl -sI https://www.truelegacyindia.com/services/will/ | grep -iE 'HTTP/|location'
+# Expect: 301  Location: https://truelegacyindia.com/services/will
+```
+
 ## Cache lifetime (Lighthouse “Use efficient cache lifetimes”)
 
 Lighthouse reports **Cache TTL: None** when the server omits `Cache-Control`.
