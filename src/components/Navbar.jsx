@@ -167,7 +167,7 @@ const Navbar = () => {
                   className="block w-full text-left hover:text-emerald-800 cursor-pointer"
                   onClick={() => setIsServicesOpen(false)}
                 >
-                  Family Will
+                   Will
                 </Link>
                 <Link
                   to="/services/trust"
@@ -479,7 +479,7 @@ const Navbar = () => {
                       className="block text-left w-full hover:text-[#F4D57E]"
                       onClick={() => setIsMobileServicesOpen(false)}
                     >
-                      Family Will
+                       Will
                     </Link>
                     <Link
                       to="/services/trust"
