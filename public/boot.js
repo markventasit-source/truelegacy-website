@@ -50,6 +50,19 @@
     window.dataLayer.push(arguments);
   };
 
+  try {
+    var storedConsent = localStorage.getItem("tl_cookie_consent");
+    if (storedConsent) {
+      var c = JSON.parse(storedConsent);
+      window.gtag("consent", "default", {
+        analytics_storage: c.analytics ? "granted" : "denied",
+        ad_storage: c.marketing ? "granted" : "denied",
+        ad_user_data: c.marketing ? "granted" : "denied",
+        ad_personalization: c.marketing ? "granted" : "denied",
+      });
+    }
+  } catch (e) {}
+
   (function (f, b, e, v, n, t, s) {
     if (f.fbq) return;
     n = f.fbq = function () {

@@ -2,6 +2,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { lazy, Suspense, useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import WhatsAppFloat from "../components/WhatsAppFloat";
+import CookieConsent from "../components/CookieConsent";
 import { usePageMeta } from "../seo/usePageMeta";
 import { captureLeadSource } from "../utils/leadSource";
 
@@ -113,6 +114,7 @@ const RootLayout = () => {
         </Suspense>
       )}
       <WhatsAppFloat />
+      <CookieConsent />
     </div>
   );
 };

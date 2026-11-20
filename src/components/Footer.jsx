@@ -418,6 +418,18 @@ const Footer = ({ hideCta = false }) => {
               <NavLink to="/terms-of-service" className="hover:text-[#F4D57E] hover:underline hover:underline-offset-2 transition-all duration-300 cursor-pointer">
                 Terms of Service
               </NavLink>
+              <span className="w-1 h-1 rounded-full bg-[#F4D57E]" />
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new CustomEvent("tl-open-cookie-settings"));
+                  }
+                }}
+                className="hover:text-[#F4D57E] hover:underline hover:underline-offset-2 transition-all duration-300 cursor-pointer bg-transparent border-0 p-0 text-[14px] text-[#A3B4B0]"
+              >
+                Cookie Settings
+              </button>
             </div>
 
 
